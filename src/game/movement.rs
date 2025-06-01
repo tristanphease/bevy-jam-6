@@ -7,6 +7,8 @@ use pyri_state::pattern::StatePattern;
 
 use crate::screen::Screen;
 
+use super::player::{ChangePlayerDirection, ChangePlayerState};
+
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<MovementAction>();
     app.add_systems(
@@ -146,7 +148,9 @@ fn control_movement(
         &JumpImpulse,
         &mut LinearVelocity,
         Has<Grounded>,
-    )>
+    )>,
+    mut player_direction_writer: EventWriter<ChangePlayerDirection>,
+    mut player_state_writer: EventWriter<ChangePlayerState>,
 ) {
     let delta_time = time.delta_secs();
 
@@ -157,10 +161,18 @@ fn control_movement(
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += *direction * movement_acceleration.0 * delta_time;
+                    player_state_writer.write(ChangePlayerState::ChangeModeRunning);
+                    let new_direction = if *direction < 0.0 {
+                        ChangePlayerDirection::TurnLeft
+                    } else {
+                        ChangePlayerDirection::TurnRight
+                    };
+                    player_direction_writer.write(new_direction);
                 }
                 MovementAction::Jump => {
                     if is_grounded {
                         linear_velocity.y = jump_impulse.0;
+                        player_state_writer.write(ChangePlayerState::ChangeModeJumping);
                     }
                 }
             }
@@ -175,6 +187,7 @@ fn update_grounded(
         (Entity, &ShapeHits, &Rotation, Option<&MaxSlopeAngle>),
         With<CharacterController>,
     >,
+    mut player_state_writer: EventWriter<ChangePlayerState>,
 ) {
     for (entity, hits, rotation, max_slope_angle) in &mut query {
         // The character is grounded if the shape caster has a hit with a normal
@@ -189,6 +202,7 @@ fn update_grounded(
 
         if is_grounded {
             commands.entity(entity).insert(Grounded);
+            player_state_writer.write(ChangePlayerState::ChangeModeIdle);
         } else {
             commands.entity(entity).remove::<Grounded>();
         }

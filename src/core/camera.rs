@@ -31,7 +31,7 @@ impl FromWorld for CameraRoot {
                     Msaa::Off,
                     SmoothFollow {
                         target: Entity::PLACEHOLDER,
-                        rate: Vec2::splat(100.0),
+                        rate: Vec2::splat(10.0),
                     },
                     IsDefaultUiCamera,
                 ))
@@ -45,9 +45,9 @@ impl FromWorld for CameraRoot {
 /// This component should only be used on root entities.
 #[derive(Component, Reflect)]
 #[reflect(Component)]
-struct SmoothFollow {
-    target: Entity,
-    rate: Vec2,
+pub struct SmoothFollow {
+    pub target: Entity,
+    pub rate: Vec2,
 }
 
 impl Configure for SmoothFollow {

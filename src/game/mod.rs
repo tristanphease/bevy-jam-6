@@ -1,6 +1,7 @@
-use crate::{core::audio::AudioSettings, prelude::*, screen::ScreenRoot};
+use crate::prelude::*;
 
 pub mod player;
+mod animated_sprite;
 mod movement;
 mod level;
 
@@ -22,7 +23,8 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         player::plugin,
         level::plugin,
-        movement::plugin
+        movement::plugin,
+        animated_sprite::plugin,
     ));
 
     app.configure::<GameAssets>();
