@@ -1,0 +1,183 @@
+{
+    "Bevy: New top-level function Plugin": {
+        "scope": "rust",
+        "prefix": "pluginfn",
+        "body": [
+            "use crate::prelude::*;",
+            "",
+            "pub(super) fn plugin(app: &mut App) {",
+            "\t$0",
+            "}"
+        ]
+    },
+    "Bevy: New System": {
+        "scope": "rust",
+        "prefix": "system",
+        "body": [
+            "#[cfg_attr(feature=\"native_dev\", hot)]",
+            "fn $1($2) {",
+            "\t$0",
+            "}"
+        ]
+    },
+    "Bevy: New Component": {
+        "scope": "rust",
+        "prefix": "component",
+        "body": [
+            "#[derive(Component, Reflect, Debug)]",
+            "#[reflect(Component)]",
+            "struct $1;",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.register_type::<Self>();$0",
+            "\t}",
+            "}"
+        ]
+    },
+    "Bevy: New Resource": {
+        "scope": "rust",
+        "prefix": "resource",
+        "body": [
+            "#[derive(Resource, Reflect, Default, Debug)]",
+            "#[reflect(Resource)]",
+            "struct $1;",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.register_type::<Self>();",
+            "\t\tapp.init_resource::<Self>();$0",
+            "\t}",
+            "}"
+        ]
+    },
+    "Bevy: New Entity": {
+        "scope": "rust",
+        "prefix": "entity",
+        "body": [
+            "fn $1() -> impl Bundle {",
+            "\t(",
+            "\t\tName::new(\"$2\"),$0",
+            "\t)",
+            "}"
+        ]
+    },
+    "Bevy: New Event": {
+        "scope": "rust",
+        "prefix": "event",
+        "body": [
+            "#[derive(Event, Reflect, Debug)]",
+            "struct $1;",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.register_type::<Self>();",
+            "\t\tapp.add_event::<Self>();$0",
+            "\t}",
+            "}"
+        ]
+    },
+    "Bevy: New SystemSet": {
+        "scope": "rust",
+        "prefix": "systemset",
+        "body": [
+            "#[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug)]",
+            "enum $1 {",
+            "\t$2",
+            "}",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.configure_sets($3, $0);",
+            "\t}",
+            "}"
+        ]
+    },
+    "Bevy: New Schedule": {
+        "scope": "rust",
+        "prefix": "schedule",
+        "body": [
+            "#[derive(ScheduleLabel, Copy, Clone, Eq, PartialEq, Hash, Debug)]",
+            "struct $1;"
+        ]
+    },
+    "pyri_state: New State": {
+        "scope": "rust",
+        "prefix": "state",
+        "body": [
+            "#[derive(State, Reflect, Copy, Clone, Default, Eq, PartialEq, Debug)]",
+            "#[state(log_flush)]",
+            "#[reflect(Resource)]",
+            "enum $1 {",
+            "\t#[default]",
+            "\t$2",
+            "}",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.register_type::<Self>();",
+            "\t\tapp.init_state::<Self>();$0",
+            "\t}",
+            "}"
+        ]
+    },
+    "leafwing-input-manager: New Actionlike": {
+        "scope": "rust",
+        "prefix": "actionlike",
+        "body": [
+            "#[derive(Actionlike, Reflect, Copy, Clone, Eq, PartialEq, Hash, Debug)]",
+            "enum $1 {",
+            "\t$2",
+            "}",
+            "",
+            "impl Configure for $1 {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.init_resource::<ActionState<Self>>();",
+            "\t\tapp.insert_resource(InputMap::default()",
+            "\t\t\t.with($0),",
+            "\t\t);",
+            "\t\tapp.add_plugins(InputManagerPlugin::<Self>::default());",
+            "\t\tapp.add_systems(",
+            "\t\t\tUpdate,",
+            "\t\t\t(",
+            "\t\t\t\t.in_set(UpdateSet::RecordInput).run_if(action_just_pressed()),",
+            "\t\t\t),",
+            "\t\t);",
+            "\t}",
+            "}"
+        ]
+    },
+    "bevy_asset_loader: New AssetCollection": {
+        "scope": "rust",
+        "prefix": "assets",
+        "body": [
+            "#[derive(AssetCollection, Resource, Reflect, Default, Debug)]",
+            "#[reflect(Resource)]",
+            "pub struct $1Assets {",
+            "\t#[asset(path = \"$2\")]",
+            "\tpub $3: Handle<$4>,",
+            "\t$0",
+            "}",
+            "",
+            "impl Configure for $1Assets {",
+            "\tfn configure(app: &mut App) {",
+            "\t\tapp.register_type::<Self>();",
+            "\t\tapp.init_collection::<Self>();",
+            "\t}",
+            "}"
+        ]
+    },
+    "bevy_jam_template: New Config": {
+        "scope": "rust",
+        "prefix": "config",
+        "body": [
+            "#[derive(Asset, Reflect, Serialize, Deserialize, Default)]",
+            "#[serde(deny_unknown_fields, default)]",
+            "struct $1;",
+            "",
+            "impl Config for $1 {",
+            "\tconst FILE: &'static str = \"$2.ron\";",
+            "}"
+        ]
+    }
+}

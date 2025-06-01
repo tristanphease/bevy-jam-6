@@ -1,0 +1,153 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run native dev (with hot-patching)",
+            "type": "process",
+            "command": "dx",
+            "args": [
+                "serve",
+                "--hot-patch",
+                "--features=native_dev"
+            ],
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run native dev",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run"
+            ],
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Run native release",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run",
+                "--release"
+            ],
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Run web dev",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run",
+                "--yes",
+                "web"
+            ],
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Run web release",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run",
+                "--yes",
+                "--release",
+                "web"
+            ],
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Debug native dev",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run",
+                "--bin=debug",
+                "--features=bevy_mod_debugdump"
+            ],
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Debug native release",
+            "type": "process",
+            "command": "bevy",
+            "args": [
+                "run",
+                "--release",
+                "--bin=debug",
+                "--features=bevy_mod_debugdump"
+            ],
+            "options": {
+                "env": {
+                    "RUST_BACKTRACE": "full"
+                }
+            },
+            "presentation": {
+                "clear": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": "build"
+        }
+    ]
+}

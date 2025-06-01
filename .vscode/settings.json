@@ -1,0 +1,24 @@
+{
+    // Run rust-analyzer with cargo features enabled.
+    "rust-analyzer.cargo.features": [
+        "native_dev",
+        "bevy_mod_debugdump",
+    ],
+    // Run rust-analyzer in `src/bin/` files.
+    "rust-analyzer.check.extraArgs": [
+        "--bins"
+    ],
+    // Allow rust-analyzer and cargo to run simultaneously.
+    // This uses a heavy amount of storage space, so consider commenting it out.
+    "rust-analyzer.cargo.targetDir": true,
+    // Make rust-analyzer ignore macros that would interfere with analysis.
+    "rust-analyzer.procMacro.ignored": {
+        "bevy_simple_subsecond_system_macros": [
+            "hot"
+        ]
+    },
+    // Display the directory of `mod.rs` files in the tab above the text editor.
+    "workbench.editor.customLabels.patterns": {
+        "**/mod.rs": "${dirname}/mod.rs"
+    },
+}
