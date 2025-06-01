@@ -3,11 +3,10 @@ use crate::core::audio::music_audio;
 use crate::menu::Menu;
 use crate::prelude::*;
 use crate::screen::Screen;
-use crate::screen::gameplay::GameplayAssets;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_loading_state(
-        LoadingState::new(Screen::Title.bevy()).load_collection::<GameplayAssets>(),
+        LoadingState::new(Screen::Title.bevy()),
     );
     app.add_systems(
         StateFlush,
