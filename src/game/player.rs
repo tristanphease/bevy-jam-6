@@ -1,5 +1,5 @@
 use crate::{core::camera::SmoothFollow, prelude::*, screen::Screen};
-
+use bevy_ecs_ldtk::prelude::*;
 use super::{animated_sprite::{AnimationIndices, AnimationTimer}, movement::CharacterControllerBundle};
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -40,7 +40,10 @@ pub(super) fn plugin(app: &mut App) {
 
     app.configure::<PlayerAssets>();
 
-    app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_player));
+    app.register_ldtk_entity::<PlayerBundle>("player");
+
+    // app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_player));
+    app.add_systems(Update, Screen::Gameplay.on_update(process_player));
     app.add_systems(Update, Screen::Gameplay.on_update(set_camera_follow));
     app.add_systems(Update, Screen::Gameplay.on_update(change_player_direction));
     app.add_systems(Update, Screen::Gameplay.on_update(change_player_state));
@@ -124,53 +127,64 @@ enum PlayerEye {
     Right
 }
 
-fn spawn_player(mut commands: Commands,
-    assets: Res<PlayerAssets>,
+#[derive(Bundle, Default, LdtkEntity)]
+struct PlayerBundle {
+    player: Player,
+    #[worldly]
+    pub worldly: Worldly,
+}
+
+fn process_player(
+    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>) {
+    assets: Res<PlayerAssets>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    new_player: Query<Entity, Added<Player>>,
+) {
+    for player_entity in new_player.iter() {
+        let layout = TextureAtlasLayout::from_grid(UVec2::splat(500), 5, 1, None, None);
+        let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
-    let layout = TextureAtlasLayout::from_grid(UVec2::splat(500), 5, 1, None, None);
-    let texture_atlas_layout = texture_atlas_layouts.add(layout);
+        let mut player_sprite = Sprite::from_atlas_image(
+            assets.player_spritesheet.clone(),
+            TextureAtlas { 
+                layout: texture_atlas_layout, 
+                index: 0 
+        });
+        player_sprite.custom_size = Some((PLAYER_WIDTH, PLAYER_HEIGHT).into());
 
-    let mut player_sprite = Sprite::from_atlas_image(
-        assets.player_spritesheet.clone(),
-        TextureAtlas { 
-            layout: texture_atlas_layout, 
-            index: 0 
-    });
-    player_sprite.custom_size = Some((PLAYER_WIDTH, PLAYER_HEIGHT).into());
+        let eye_mesh = meshes.add(Circle::new(EYE_RADIUS));
+        let eye_material = materials.add(Color::BLACK);
 
-    let eye_mesh = meshes.add(Circle::new(EYE_RADIUS));
-    let eye_material = materials.add(Color::BLACK);
-    
-    commands.spawn((
-        player_sprite,
-        Player,
-        PlayerState::default(),
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-        AnimationIndices::single(IDLE_INDEX),
-        Direction::default(),
-        Transform::from_xyz(0.0, 100.0, 0.0),
-        CharacterControllerBundle::new(Collider::rectangle(PLAYER_WIDTH, PLAYER_HEIGHT)),
-        Friction::ZERO.with_combine_rule(CoefficientCombine::Min),
-        Restitution::ZERO.with_combine_rule(CoefficientCombine::Min),
-        ColliderDensity(2.0),
-        GravityScale(1.5),
-    )).with_children(|player| {
-        player.spawn((
-            Mesh2d(eye_mesh.clone()),
-            MeshMaterial2d(eye_material.clone()),
-            PlayerEye::Left,
-            Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
-        ));
-        player.spawn((
-            Mesh2d(eye_mesh.clone()),
-            MeshMaterial2d(eye_material.clone()),
-            PlayerEye::Right,
-            Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
-        ));
-    });
+        commands.entity(player_entity)
+            .insert((
+                player_sprite,
+                PlayerState::default(),
+                AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+                AnimationIndices::single(IDLE_INDEX),
+                Direction::default(),
+                CharacterControllerBundle::new(Collider::ellipse(PLAYER_WIDTH / 2.0, PLAYER_HEIGHT / 2.0)),
+                Friction::ZERO.with_combine_rule(CoefficientCombine::Min),
+                Restitution::ZERO.with_combine_rule(CoefficientCombine::Min),
+                ColliderDensity(4.0),
+                GravityScale(2.0),
+            ))
+            .with_children(|player| {
+            player.spawn((
+                Mesh2d(eye_mesh.clone()),
+                MeshMaterial2d(eye_material.clone()),
+                PlayerEye::Left,
+                Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
+            ));
+            player.spawn((
+                Mesh2d(eye_mesh.clone()),
+                MeshMaterial2d(eye_material.clone()),
+                PlayerEye::Right,
+                Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
+            ));
+        });
+    }
 }
 
 fn set_camera_follow(

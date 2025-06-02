@@ -20,6 +20,9 @@ pub(super) fn plugin(app: &mut App) {
             apply_movement_damping,
         ))
     );
+
+    // for debugging
+    // app.insert_gizmo_config(PhysicsGizmos::default(), GizmoConfig::default());
 }
 
 /// A marker component indicating that an entity is using a character controller.
@@ -70,7 +73,7 @@ pub struct MovementBundle {
 }
 
 impl MovementBundle {
-    pub const fn new(
+    pub fn new(
         acceleration: Scalar,
         damping: Scalar,
         jump_impulse: Scalar,
@@ -87,7 +90,7 @@ impl MovementBundle {
 
 impl Default for MovementBundle {
     fn default() -> Self {
-        Self::new(2000.0, 0.9, 200.0, avian2d::math::PI * 0.45)
+        Self::new(2000.0, 0.9, 300.0, avian2d::math::PI * 0.45)
     }
 }
 
@@ -95,14 +98,15 @@ impl CharacterControllerBundle {
     pub fn new(collider: Collider) -> Self {
         // Create shape caster as a slightly smaller version of collider
         let mut caster_shape = collider.clone();
-        caster_shape.set_scale(Vector::ONE * 0.99, 10);
+        // this really should be 0.99 but then it's way too large, idk why
+        caster_shape.set_scale(Vector::ONE * 0.12, 10);
 
         Self {
             character_controller: CharacterController,
             body: RigidBody::Dynamic,
             collider,
             ground_caster: ShapeCaster::new(caster_shape, Vector::ZERO, 0.0, Dir2::NEG_Y)
-                .with_max_distance(10.0),
+                .with_max_distance(5.0),
             locked_axes: LockedAxes::ROTATION_LOCKED,
             movement: MovementBundle::default(),
         }
@@ -120,7 +124,7 @@ fn handle_keyboard_input(
     mut movement_event_writer: EventWriter<MovementAction>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
-    let left =keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
+    let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
 
     let horizontal = if right && !left {

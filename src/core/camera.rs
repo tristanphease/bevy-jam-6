@@ -26,6 +26,7 @@ impl FromWorld for CameraRoot {
                     Camera2d,
                     Projection::Orthographic(OrthographicProjection {
                         near: -1000.0,
+                        scale: 0.3,
                         ..OrthographicProjection::default_2d()
                     }),
                     Msaa::Off,
