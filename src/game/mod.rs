@@ -1,9 +1,11 @@
 use crate::prelude::*;
 
-pub mod player;
+mod player;
 mod animated_sprite;
 mod movement;
 mod level;
+mod chain;
+mod chain_movement;
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]
@@ -25,6 +27,8 @@ pub(super) fn plugin(app: &mut App) {
         level::plugin,
         movement::plugin,
         animated_sprite::plugin,
+        chain::plugin,
+        chain_movement::plugin,
     ));
 
     app.configure::<GameAssets>();

@@ -209,7 +209,6 @@ fn spawn_level(
 
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: assets.level_map.clone().into(),
-        // transform: Transform::from_scale(Vec3::splat(3.0)),
         ..default()
     });
 }

@@ -5,7 +5,7 @@ use avian2d::{math::{Scalar, Vector}, prelude::*};
 use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
-use crate::screen::Screen;
+use crate::{game::chain::ConnectedChain, screen::Screen};
 
 use super::player::{ChangePlayerDirection, ChangePlayerState};
 
@@ -152,7 +152,7 @@ fn control_movement(
         &JumpImpulse,
         &mut LinearVelocity,
         Has<Grounded>,
-    )>,
+    ), Without<ConnectedChain>>,
     mut player_direction_writer: EventWriter<ChangePlayerDirection>,
     mut player_state_writer: EventWriter<ChangePlayerState>,
 ) {

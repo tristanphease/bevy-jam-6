@@ -1,4 +1,4 @@
-use crate::{core::camera::SmoothFollow, prelude::*, screen::Screen};
+use crate::{core::camera::SmoothFollow, game::chain::CanAttachChain, prelude::*, screen::Screen};
 use bevy_ecs_ldtk::prelude::*;
 use super::{animated_sprite::{AnimationIndices, AnimationTimer}, movement::CharacterControllerBundle};
 
@@ -169,6 +169,8 @@ fn process_player(
                 Restitution::ZERO.with_combine_rule(CoefficientCombine::Min),
                 ColliderDensity(4.0),
                 GravityScale(2.0),
+                CollisionEventsEnabled,
+                CanAttachChain,
             ))
             .with_children(|player| {
             player.spawn((
