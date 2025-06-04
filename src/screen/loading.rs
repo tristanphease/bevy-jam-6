@@ -4,9 +4,7 @@ use crate::screen::ScreenRoot;
 use crate::screen::fade::fade_out;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_loading_state(
-        LoadingState::new(Screen::Loading.bevy()),
-    );
+    app.add_loading_state(LoadingState::new(Screen::Loading.bevy()));
     app.add_systems(StateFlush, Screen::Loading.on_enter(spawn_loading_screen));
     app.add_systems(Update, Screen::Loading.on_update(update_loading));
 }

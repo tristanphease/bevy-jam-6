@@ -4,7 +4,6 @@ use crate::{prelude::*, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(LdtkPlugin);
-    
 
     app.configure::<LevelAssets>();
 
@@ -14,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_level));
     app.add_systems(Update, Screen::Gameplay.on_update(spawn_wall_collision));
-} 
+}
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]
@@ -120,7 +119,7 @@ fn spawn_wall_collision(
                                     right: x - 1,
                                 });
                                 plate_start = None;
-                            }
+                            },
                             (None, true) => plate_start = Some(x),
                             _ => (),
                         }
@@ -190,10 +189,7 @@ fn spawn_wall_collision(
     }
 }
 
-fn spawn_level(
-    mut commands: Commands,
-    assets: Res<LevelAssets>,
-) {
+fn spawn_level(mut commands: Commands, assets: Res<LevelAssets>) {
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: assets.level_map.clone().into(),
         ..default()

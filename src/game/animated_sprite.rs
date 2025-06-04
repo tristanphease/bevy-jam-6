@@ -21,7 +21,10 @@ impl AnimationIndices {
     }
 
     pub fn single(index: usize) -> Self {
-        Self { first: index, last: index }
+        Self {
+            first: index,
+            last: index,
+        }
     }
 }
 

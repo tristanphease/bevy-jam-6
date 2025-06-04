@@ -1,7 +1,9 @@
 //! <https://github.com/Jondolf/avian/blob/main/crates/avian2d/examples/dynamic_character_2d/plugin.rs>
 
-
-use avian2d::{math::{Scalar, Vector}, prelude::*};
+use avian2d::{
+    math::{Scalar, Vector},
+    prelude::*,
+};
 use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
@@ -18,7 +20,7 @@ pub(super) fn plugin(app: &mut App) {
             update_grounded,
             control_movement,
             apply_movement_damping,
-        ))
+        )),
     );
 
     // for debugging
@@ -113,7 +115,6 @@ impl CharacterControllerBundle {
     }
 }
 
-
 #[derive(Event)]
 pub enum MovementAction {
     Move(Scalar),
@@ -174,13 +175,13 @@ fn control_movement(
                         ChangePlayerDirection::TurnRight
                     };
                     player_direction_writer.write(new_direction);
-                }
+                },
                 MovementAction::Jump => {
                     if is_grounded {
                         linear_velocity.y = jump_impulse.0 * damper;
                         player_state_writer.write(ChangePlayerState::ChangeModeJumping);
                     }
-                }
+                },
             }
         }
     }
@@ -215,11 +216,10 @@ fn update_grounded(
     }
 }
 
-
 /// Slows down movement in the X direction.
 fn apply_movement_damping(
-    mut query: Query<(&MovementDampingFactor, &mut LinearVelocity), 
-    Without<ConnectedChain>>) {
+    mut query: Query<(&MovementDampingFactor, &mut LinearVelocity), Without<ConnectedChain>>,
+) {
     for (damping_factor, mut linear_velocity) in &mut query {
         // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
         linear_velocity.x *= damping_factor.0;

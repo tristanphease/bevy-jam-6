@@ -10,10 +10,10 @@ pub(super) fn plugin(app: &mut App) {
 
     app.configure::<ChainAssets>();
 
-    app.add_systems(Update, Screen::Gameplay.on_update((
-        process_chain,
-        process_chain_immunity_timer,
-    )));
+    app.add_systems(
+        Update,
+        Screen::Gameplay.on_update((process_chain, process_chain_immunity_timer)),
+    );
 }
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
@@ -79,8 +79,9 @@ struct ChainBundle {
 }
 
 impl ChainBundle {
-    pub fn new(image_handle: Handle<Image>, 
-        rigid_body: RigidBody, 
+    pub fn new(
+        image_handle: Handle<Image>,
+        rigid_body: RigidBody,
         transform: Transform,
         chain_part: ChainPart,
     ) -> Self {
@@ -89,7 +90,10 @@ impl ChainBundle {
             rigid_body,
             collider: Collider::rectangle(CHAIN_SIZE * 10.0, CHAIN_SIZE * 50.0),
             transform,
-            mass_properties_bundle: MassPropertiesBundle::from_shape(&Rectangle::new(10.0, 50.0), 0.02),
+            mass_properties_bundle: MassPropertiesBundle::from_shape(
+                &Rectangle::new(10.0, 50.0),
+                0.02,
+            ),
             collision_event_enabled: CollisionEventsEnabled,
             chain_part,
             chain_layer: CollisionLayers::new(GameLayer::ChainLayer, LayerMask::ALL),
@@ -103,7 +107,6 @@ fn process_chain(
     chain_query: Query<&Transform, Added<ChainImport>>,
     chain_assets: Res<ChainAssets>,
 ) {
-    
     for chain_transform in chain_query.iter() {
         let mut last_chain_option: Option<Entity> = None;
         let max_value = f32::floor(chain_transform.scale.y / CHAIN_SIZE);
@@ -114,12 +117,12 @@ fn process_chain(
             transform.scale.y = CHAIN_SIZE;
             transform.translation.y -= (y as f32) * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
             if let Some(last_chain) = last_chain_option {
-                let next_chain = commands.spawn(
-                    ChainBundle::new(
+                let next_chain = commands
+                    .spawn(ChainBundle::new(
                         chain_assets.chain_image.clone(),
-                            RigidBody::Dynamic,
-                            transform,
-                            ChainPart,
+                        RigidBody::Dynamic,
+                        transform,
+                        ChainPart,
                     ))
                     .observe(observe_chain_collision)
                     .id();
@@ -129,24 +132,26 @@ fn process_chain(
                     RevoluteJoint::new(last_chain, next_chain)
                         .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * CHAIN_IMAGE_SIZE)
                         .with_angle_limits(-0.01, 0.01)
-                        .with_compliance(0.000001)
+                        .with_compliance(0.000001),
                 );
 
                 last_chain_option = Some(next_chain);
             } else {
                 // spawn fixed chain at the start
                 // could use different sprite for this one to indicate it's fixed
-                last_chain_option = Some(commands.spawn(ChainBundle::new(
-                        chain_assets.chain_image.clone(),
-                        RigidBody::Kinematic,
-                        transform,
-                        ChainPart,
-                ))
-                .observe(observe_chain_collision)
-                .id());
+                last_chain_option = Some(
+                    commands
+                        .spawn(ChainBundle::new(
+                            chain_assets.chain_image.clone(),
+                            RigidBody::Kinematic,
+                            transform,
+                            ChainPart,
+                        ))
+                        .observe(observe_chain_collision)
+                        .id(),
+                );
             }
         }
-        
     }
 }
 
@@ -159,30 +164,33 @@ pub struct ChildOfChain(#[entities] pub Entity);
 pub struct ChildrenOfChain(Vec<Entity>);
 
 fn observe_chain_collision(
-    trigger: Trigger<OnCollisionStart>, 
+    trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    attachable_query: Query<Entity, (With<CanAttachChain>, Without<ConnectedChain>, Without<ChainImmunity>)>,
+    attachable_query: Query<
+        Entity,
+        (
+            With<CanAttachChain>,
+            Without<ConnectedChain>,
+            Without<ChainImmunity>,
+        ),
+    >,
 ) {
     let chain = trigger.target();
     let other_entity = trigger.collider;
     if attachable_query.contains(other_entity) {
-
         // create filter so that we don't collide with the chain while on it
         let filters = *LayerMask::ALL & !(GameLayer::ChainLayer.to_bits());
-        let ignore_chain_collision_layer = CollisionLayers::new(
-            LayerMask::DEFAULT, 
-            filters,
-        );
+        let ignore_chain_collision_layer = CollisionLayers::new(LayerMask::DEFAULT, filters);
 
-        commands.entity(other_entity)
+        commands
+            .entity(other_entity)
             .insert(ConnectedChain)
             .insert(ChildOfChain(chain))
             .insert(GravityScale(1.0))
-            .insert(ignore_chain_collision_layer); 
+            .insert(ignore_chain_collision_layer);
 
         commands.spawn((
-            DistanceJoint::new(chain, other_entity)
-                .with_limits(1.0, 5.0),
+            DistanceJoint::new(chain, other_entity).with_limits(1.0, 5.0),
             ChainJoint,
         ));
     }
@@ -191,13 +199,12 @@ fn observe_chain_collision(
 fn process_chain_immunity_timer(
     time: Res<Time>,
     mut commands: Commands,
-    chain_immunity_query: Query<(&mut ChainImmunity, Entity)>
+    chain_immunity_query: Query<(&mut ChainImmunity, Entity)>,
 ) {
     for mut chain_immunity in chain_immunity_query {
         chain_immunity.0.tick(time.delta());
         if chain_immunity.0.finished() {
-            commands.entity(chain_immunity.1)
-                .remove::<ChainImmunity>();
+            commands.entity(chain_immunity.1).remove::<ChainImmunity>();
         }
     }
 }

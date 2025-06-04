@@ -1,12 +1,12 @@
 use crate::prelude::*;
 
-mod player;
 mod animated_sprite;
-mod movement;
-mod level;
 mod chain;
 mod chain_movement;
 mod goal;
+mod level;
+mod movement;
+mod player;
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]

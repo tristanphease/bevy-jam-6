@@ -1,14 +1,18 @@
-use crate::{game::{chain::{ChainImmunity, ChainJoint, ChildOfChain, ConnectedChain}, player::Player}, prelude::*, screen::Screen};
+use crate::{
+    game::{
+        chain::{ChainImmunity, ChainJoint, ChildOfChain, ConnectedChain},
+        player::Player,
+    },
+    prelude::*,
+    screen::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<PlayerChainEvent>();
 
     app.add_systems(
-        Update, 
-        Screen::Gameplay.on_update((
-            handle_keyboard_input,
-            handle_player_chain_event,
-        ))
+        Update,
+        Screen::Gameplay.on_update((handle_keyboard_input, handle_player_chain_event)),
     );
 }
 
@@ -32,7 +36,8 @@ fn handle_keyboard_input(
     if !*connected_chain {
         return;
     }
-    let leave_chain = keyboard_input.any_just_pressed([KeyCode::KeyW, KeyCode::ArrowUp, KeyCode::Space]);
+    let leave_chain =
+        keyboard_input.any_just_pressed([KeyCode::KeyW, KeyCode::ArrowUp, KeyCode::Space]);
 
     if leave_chain {
         player_chain_event.write(PlayerChainEvent::LeaveChain);
@@ -42,16 +47,19 @@ fn handle_keyboard_input(
 fn handle_player_chain_event(
     mut chain_event_reader: EventReader<PlayerChainEvent>,
     mut commands: Commands,
-    mut player_query: Single<(Entity, &mut Transform, &mut LinearVelocity, &ChildOfChain), (With<Player>, With<ConnectedChain>)>,
+    mut player_query: Single<
+        (Entity, &mut Transform, &mut LinearVelocity, &ChildOfChain),
+        (With<Player>, With<ConnectedChain>),
+    >,
     joint_query: Query<(Entity, &DistanceJoint), With<ChainJoint>>,
 ) {
     for chain_event in chain_event_reader.read() {
         match chain_event {
             PlayerChainEvent::LeaveChain => {
-
                 // let chain_linear_velocity = chain_parent_query.get(player_query.3.parent()).unwrap();
                 let player_entity = player_query.0;
-                commands.entity(player_entity)
+                commands
+                    .entity(player_entity)
                     .remove::<ConnectedChain>()
                     .remove::<ChildOfChain>()
                     .insert(ChainImmunity(Timer::from_seconds(1.0, TimerMode::Once)))
@@ -70,6 +78,3 @@ fn handle_player_chain_event(
         }
     }
 }
-
-
-

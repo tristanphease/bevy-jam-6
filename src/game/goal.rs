@@ -5,12 +5,7 @@ use crate::{game::player::Player, prelude::*, screen::Screen};
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<GoalBundle>("goal");
 
-    app.add_systems(
-        Update, 
-        Screen::Gameplay.on_update(
-            process_goals,
-        )
-    );
+    app.add_systems(Update, Screen::Gameplay.on_update(process_goals));
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -25,16 +20,11 @@ pub struct GoalBundle {
     sprite_sheet: Sprite,
 }
 
-fn process_goals(
-    mut commands: Commands,
-    goal_query: Query<Entity, Added<Goal>>
-) {
+fn process_goals(mut commands: Commands, goal_query: Query<Entity, Added<Goal>>) {
     for goal_entity in goal_query {
-        commands.entity(goal_entity)
-            .insert((
-                Collider::rectangle(10.0, 10.0),
-                CollisionEventsEnabled,
-            ))
+        commands
+            .entity(goal_entity)
+            .insert((Collider::rectangle(10.0, 10.0), CollisionEventsEnabled))
             .observe(goal_observer);
     }
 }
@@ -55,4 +45,3 @@ fn goal_observer(
         indices.level += 1;
     }
 }
-

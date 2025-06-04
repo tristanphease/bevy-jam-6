@@ -1,6 +1,9 @@
+use super::{
+    animated_sprite::{AnimationIndices, AnimationTimer},
+    movement::CharacterControllerBundle,
+};
 use crate::{core::camera::SmoothFollow, game::chain::CanAttachChain, prelude::*, screen::Screen};
 use bevy_ecs_ldtk::prelude::*;
-use super::{animated_sprite::{AnimationIndices, AnimationTimer}, movement::CharacterControllerBundle};
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
@@ -47,7 +50,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, Screen::Gameplay.on_update(set_camera_follow));
     app.add_systems(Update, Screen::Gameplay.on_update(change_player_direction));
     app.add_systems(Update, Screen::Gameplay.on_update(change_player_state));
-} 
+}
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]
@@ -99,7 +102,7 @@ impl ChangePlayerDirection {
 pub enum ChangePlayerState {
     ChangeModeRunning,
     ChangeModeIdle,
-    ChangeModeJumping
+    ChangeModeJumping,
 }
 
 impl ChangePlayerState {
@@ -113,7 +116,9 @@ impl ChangePlayerState {
 
     fn to_indices(&self) -> AnimationIndices {
         match self {
-            ChangePlayerState::ChangeModeRunning => AnimationIndices::new(RUN_FIRST_INDEX, RUN_LAST_INDEX),
+            ChangePlayerState::ChangeModeRunning => {
+                AnimationIndices::new(RUN_FIRST_INDEX, RUN_LAST_INDEX)
+            },
             ChangePlayerState::ChangeModeIdle => AnimationIndices::single(IDLE_INDEX),
             ChangePlayerState::ChangeModeJumping => AnimationIndices::single(JUMP_INDEX),
         }
@@ -124,7 +129,7 @@ impl ChangePlayerState {
 #[reflect(Component)]
 enum PlayerEye {
     Left,
-    Right
+    Right,
 }
 
 #[derive(Bundle, Default, LdtkEntity)]
@@ -146,23 +151,28 @@ fn process_player(
 
         let mut player_sprite = Sprite::from_atlas_image(
             assets.player_spritesheet.clone(),
-            TextureAtlas { 
-                layout: texture_atlas_layout, 
-                index: 0 
-        });
+            TextureAtlas {
+                layout: texture_atlas_layout,
+                index: 0,
+            },
+        );
         player_sprite.custom_size = Some((PLAYER_WIDTH, PLAYER_HEIGHT).into());
 
         let eye_mesh = meshes.add(Circle::new(EYE_RADIUS));
         let eye_material = materials.add(Color::BLACK);
 
-        commands.entity(player_entity)
+        commands
+            .entity(player_entity)
             .insert((
                 player_sprite,
                 PlayerState::default(),
                 AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
                 AnimationIndices::single(IDLE_INDEX),
                 Direction::default(),
-                CharacterControllerBundle::new(Collider::ellipse(PLAYER_WIDTH / 2.0, PLAYER_HEIGHT / 2.0)),
+                CharacterControllerBundle::new(Collider::ellipse(
+                    PLAYER_WIDTH / 2.0,
+                    PLAYER_HEIGHT / 2.0,
+                )),
                 Friction::new(0.1).with_combine_rule(CoefficientCombine::Min),
                 Restitution::new(0.3).with_combine_rule(CoefficientCombine::Min),
                 ColliderDensity(4.0),
@@ -171,19 +181,19 @@ fn process_player(
                 CanAttachChain,
             ))
             .with_children(|player| {
-            player.spawn((
-                Mesh2d(eye_mesh.clone()),
-                MeshMaterial2d(eye_material.clone()),
-                PlayerEye::Left,
-                Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
-            ));
-            player.spawn((
-                Mesh2d(eye_mesh.clone()),
-                MeshMaterial2d(eye_material.clone()),
-                PlayerEye::Right,
-                Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
-            ));
-        });
+                player.spawn((
+                    Mesh2d(eye_mesh.clone()),
+                    MeshMaterial2d(eye_material.clone()),
+                    PlayerEye::Left,
+                    Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
+                ));
+                player.spawn((
+                    Mesh2d(eye_mesh.clone()),
+                    MeshMaterial2d(eye_material.clone()),
+                    PlayerEye::Right,
+                    Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
+                ));
+            });
     }
 }
 
@@ -210,10 +220,18 @@ fn change_player_direction(
             let player_eye = player_eyes_query.get_mut(eye_entity);
             if let Ok(mut player_eye) = player_eye {
                 *player_eye.0 = match (event, player_eye.1) {
-                    (ChangePlayerDirection::TurnLeft, PlayerEye::Left) => Transform::from_xyz(-LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
-                    (ChangePlayerDirection::TurnRight, PlayerEye::Left) => Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
-                    (ChangePlayerDirection::TurnLeft, PlayerEye::Right) => Transform::from_xyz(-RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
-                    (ChangePlayerDirection::TurnRight, PlayerEye::Right) => Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
+                    (ChangePlayerDirection::TurnLeft, PlayerEye::Left) => {
+                        Transform::from_xyz(-LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0)
+                    },
+                    (ChangePlayerDirection::TurnRight, PlayerEye::Left) => {
+                        Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0)
+                    },
+                    (ChangePlayerDirection::TurnLeft, PlayerEye::Right) => {
+                        Transform::from_xyz(-RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0)
+                    },
+                    (ChangePlayerDirection::TurnRight, PlayerEye::Right) => {
+                        Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0)
+                    },
                 };
             }
         }
