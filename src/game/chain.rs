@@ -12,7 +12,6 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(Update, Screen::Gameplay.on_update((
         process_chain,
-        // apply_chain_transform,
         process_chain_immunity_timer,
     )));
 }

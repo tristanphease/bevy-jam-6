@@ -18,14 +18,10 @@ Chain Reaction
     - Use bevy_ecs_ldtk / ltdk.io - done
     - Create basic tileset - think about a theme
 - Get chains working
-    - Pre-existing in world chains
+    - Pre-existing in world chains - done 
     - Chains coming down - have events that trigger this? 
     - Chains from player
 - Multiple levels
 - Fix menu and restarting level
 - Audio??
-
-For chains:
-- Add identifier to chains so they can be differentiated
-- Fix collision hook so player doesn't collide with chain attached to
-- make minor adjustments so it feels right
+- Iron out physics

@@ -6,6 +6,7 @@ mod movement;
 mod level;
 mod chain;
 mod chain_movement;
+mod goal;
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]
@@ -29,6 +30,7 @@ pub(super) fn plugin(app: &mut App) {
         animated_sprite::plugin,
         chain::plugin,
         chain_movement::plugin,
+        goal::plugin,
     ));
 
     app.configure::<GameAssets>();

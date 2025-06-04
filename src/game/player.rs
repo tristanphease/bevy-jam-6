@@ -130,8 +130,6 @@ enum PlayerEye {
 #[derive(Bundle, Default, LdtkEntity)]
 struct PlayerBundle {
     player: Player,
-    #[worldly]
-    pub worldly: Worldly,
 }
 
 fn process_player(
@@ -165,7 +163,7 @@ fn process_player(
                 AnimationIndices::single(IDLE_INDEX),
                 Direction::default(),
                 CharacterControllerBundle::new(Collider::ellipse(PLAYER_WIDTH / 2.0, PLAYER_HEIGHT / 2.0)),
-                Friction::ZERO.with_combine_rule(CoefficientCombine::Min),
+                Friction::new(0.1).with_combine_rule(CoefficientCombine::Min),
                 Restitution::new(0.3).with_combine_rule(CoefficientCombine::Min),
                 ColliderDensity(4.0),
                 GravityScale(2.0),
