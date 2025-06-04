@@ -1,4 +1,4 @@
-use crate::{prelude::*, screen::Screen};
+use crate::{game::chain_movement::GameLayer, prelude::*, screen::Screen};
 use avian2d::math::Vector;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -12,7 +12,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(Update, Screen::Gameplay.on_update((
         process_chain,
-        apply_chain_transform,
+        // apply_chain_transform,
         process_chain_immunity_timer,
     )));
 }
@@ -42,13 +42,13 @@ pub struct CanAttachChain;
 #[reflect(Component)]
 pub struct ConnectedChain;
 
-/// Means the chain is immune for some time
+/// Means the entity is immune from attaching to chains for a time defined by the timer
 #[derive(Component, Debug, Clone, PartialEq, Eq, Default, Deref, DerefMut, Reflect)]
 #[reflect(Component)]
 pub struct ChainImmunity(pub Timer);
 
 /// Part of a chain
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 pub struct ChainPart;
 
@@ -56,6 +56,11 @@ pub struct ChainPart;
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 struct ChainImport;
+
+/// Chain joint attached between player and chain
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[reflect(Component)]
+pub struct ChainJoint;
 
 #[derive(Bundle, Default, LdtkEntity)]
 pub struct ChainImportBundle {
@@ -68,21 +73,27 @@ struct ChainBundle {
     rigid_body: RigidBody,
     collider: Collider,
     transform: Transform,
-    debug_render: DebugRender,
     mass_properties_bundle: MassPropertiesBundle,
     collision_event_enabled: CollisionEventsEnabled,
+    chain_part: ChainPart,
+    chain_layer: CollisionLayers,
 }
 
 impl ChainBundle {
-    pub fn new(image_handle: Handle<Image>, rigid_body: RigidBody, transform: Transform) -> Self {
+    pub fn new(image_handle: Handle<Image>, 
+        rigid_body: RigidBody, 
+        transform: Transform,
+        chain_part: ChainPart,
+    ) -> Self {
         Self {
             sprite: Sprite::from_image(image_handle),
             rigid_body,
             collider: Collider::rectangle(CHAIN_SIZE * 10.0, CHAIN_SIZE * 50.0),
             transform,
-            debug_render: DebugRender::default(),
-            mass_properties_bundle: MassPropertiesBundle::from_shape(&Rectangle::new(10.0, 10.0), 1.0),
+            mass_properties_bundle: MassPropertiesBundle::from_shape(&Rectangle::new(10.0, 50.0), 0.02),
             collision_event_enabled: CollisionEventsEnabled,
+            chain_part,
+            chain_layer: CollisionLayers::new(GameLayer::ChainLayer, LayerMask::ALL),
         }
     }
 }
@@ -103,13 +114,13 @@ fn process_chain(
             let mut transform = chain_transform.clone();
             transform.scale.y = CHAIN_SIZE;
             transform.translation.y -= (y as f32) * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
-            transform.rotate_z(0.3);
             if let Some(last_chain) = last_chain_option {
                 let next_chain = commands.spawn(
                     ChainBundle::new(
                         chain_assets.chain_image.clone(),
                             RigidBody::Dynamic,
-                            transform
+                            transform,
+                            ChainPart,
                     ))
                     .observe(observe_chain_collision)
                     .id();
@@ -119,7 +130,7 @@ fn process_chain(
                     RevoluteJoint::new(last_chain, next_chain)
                         .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * CHAIN_IMAGE_SIZE)
                         .with_angle_limits(-0.01, 0.01)
-                        .with_compliance(0.00001)
+                        .with_compliance(0.000001)
                 );
 
                 last_chain_option = Some(next_chain);
@@ -130,6 +141,7 @@ fn process_chain(
                         chain_assets.chain_image.clone(),
                         RigidBody::Kinematic,
                         transform,
+                        ChainPart,
                 ))
                 .observe(observe_chain_collision)
                 .id());
@@ -143,31 +155,9 @@ fn process_chain(
 #[relationship(relationship_target = ChildrenOfChain)]
 pub struct ChildOfChain(#[entities] pub Entity);
 
-impl ChildOfChain {
-    #[inline]
-    pub fn parent(&self) -> Entity {
-        self.0
-    }
-}
-
 #[derive(Component, Default, Debug, Deref, DerefMut, PartialEq, Eq)]
 #[relationship_target(relationship = ChildOfChain)]
 pub struct ChildrenOfChain(Vec<Entity>);
-
-fn apply_chain_transform(
-    parent_chain_query: Query<(Entity, &GlobalTransform, &ChildrenOfChain), Without<ChildOfChain>>,
-    mut chain_follow_query: Query<&mut Transform, With<ChildOfChain>>,
-) {
-    for parent_chain in parent_chain_query {
-        for child in parent_chain.2.iter() {
-            let mut transform = chain_follow_query.get_mut(child).unwrap();
-            // ideally would allow a tiny amount of free movement
-            transform.translation = parent_chain.1.translation();
-            transform.rotation = parent_chain.1.rotation();
-        }
-    }
-}
-
 
 fn observe_chain_collision(
     trigger: Trigger<OnCollisionStart>, 
@@ -178,10 +168,24 @@ fn observe_chain_collision(
     let other_entity = trigger.collider;
     if attachable_query.contains(other_entity) {
 
+        // create filter so that we don't collide with the chain while on it
+        let filters = *LayerMask::ALL & !(GameLayer::ChainLayer.to_bits());
+        let ignore_chain_collision_layer = CollisionLayers::new(
+            LayerMask::DEFAULT, 
+            filters,
+        );
+
         commands.entity(other_entity)
             .insert(ConnectedChain)
             .insert(ChildOfChain(chain))
-            .insert(GravityScale(0.0)); //disable gravity
+            .insert(GravityScale(1.0))
+            .insert(ignore_chain_collision_layer); 
+
+        commands.spawn((
+            DistanceJoint::new(chain, other_entity)
+                .with_limits(1.0, 5.0),
+            ChainJoint,
+        ));
     }
 }
 

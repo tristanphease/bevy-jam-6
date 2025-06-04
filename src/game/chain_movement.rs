@@ -1,4 +1,4 @@
-use crate::{game::{chain::{ChainImmunity, ChildOfChain, ChildrenOfChain, ConnectedChain}, player::Player}, prelude::*, screen::Screen};
+use crate::{game::{chain::{ChainImmunity, ChainJoint, ChildOfChain, ConnectedChain}, player::Player}, prelude::*, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<PlayerChainEvent>();
@@ -10,6 +10,13 @@ pub(super) fn plugin(app: &mut App) {
             handle_player_chain_event,
         ))
     );
+}
+
+#[derive(PhysicsLayer, Clone, Copy, Debug, Default)]
+pub enum GameLayer {
+    #[default]
+    Default, // Layer 0 - the default layer that objects are assigned to
+    ChainLayer, // for chains
 }
 
 #[derive(Event, Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,24 +43,29 @@ fn handle_player_chain_event(
     mut chain_event_reader: EventReader<PlayerChainEvent>,
     mut commands: Commands,
     mut player_query: Single<(Entity, &mut Transform, &mut LinearVelocity, &ChildOfChain), (With<Player>, With<ConnectedChain>)>,
-    chain_parent_query: Query<&LinearVelocity, (With<ChildrenOfChain>, Without<ConnectedChain>)>,
+    joint_query: Query<(Entity, &DistanceJoint), With<ChainJoint>>,
 ) {
     for chain_event in chain_event_reader.read() {
         match chain_event {
             PlayerChainEvent::LeaveChain => {
 
-                let chain_linear_velocity = chain_parent_query.get(player_query.3.parent()).unwrap();
-
-                commands.entity(player_query.0)
+                // let chain_linear_velocity = chain_parent_query.get(player_query.3.parent()).unwrap();
+                let player_entity = player_query.0;
+                commands.entity(player_entity)
                     .remove::<ConnectedChain>()
                     .remove::<ChildOfChain>()
+                    .insert(ChainImmunity(Timer::from_seconds(1.0, TimerMode::Once)))
                     .insert(GravityScale(2.0))
-                    .insert(ChainImmunity(Timer::from_seconds(1.0, TimerMode::Once)));
+                    .insert(CollisionLayers::DEFAULT);
 
                 player_query.1.rotation = Quat::default();
-                *player_query.2 = *chain_linear_velocity;
 
-                
+                for joints in joint_query {
+                    let joint = joints.1;
+                    if joint.entity1 == player_entity || joint.entity2 == player_entity {
+                        commands.entity(joints.0).despawn();
+                    }
+                }
             },
         }
     }

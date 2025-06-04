@@ -25,3 +25,7 @@ Chain Reaction
 - Fix menu and restarting level
 - Audio??
 
+For chains:
+- Add identifier to chains so they can be differentiated
+- Fix collision hook so player doesn't collide with chain attached to
+- make minor adjustments so it feels right

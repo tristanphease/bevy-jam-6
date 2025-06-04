@@ -90,7 +90,7 @@ impl MovementBundle {
 
 impl Default for MovementBundle {
     fn default() -> Self {
-        Self::new(2000.0, 0.9, 300.0, avian2d::math::PI * 0.45)
+        Self::new(2000.0, 0.95, 300.0, avian2d::math::PI * 0.45)
     }
 }
 
@@ -152,19 +152,21 @@ fn control_movement(
         &JumpImpulse,
         &mut LinearVelocity,
         Has<Grounded>,
-    ), Without<ConnectedChain>>,
+        Has<ConnectedChain>,
+    )>,
     mut player_direction_writer: EventWriter<ChangePlayerDirection>,
     mut player_state_writer: EventWriter<ChangePlayerState>,
 ) {
     let delta_time = time.delta_secs();
 
     for event in movement_event_reader.read() {
-        for (movement_acceleration, jump_impulse, mut linear_velocity, is_grounded) in
+        for (movement_acceleration, jump_impulse, mut linear_velocity, is_grounded, is_on_chain) in
             &mut controller_query
         {
+            let damper = if is_on_chain { 0.6 } else { 1.0 };
             match event {
                 MovementAction::Move(direction) => {
-                    linear_velocity.x += *direction * movement_acceleration.0 * delta_time;
+                    linear_velocity.x += damper * *direction * movement_acceleration.0 * delta_time;
                     player_state_writer.write(ChangePlayerState::ChangeModeRunning);
                     let new_direction = if *direction < 0.0 {
                         ChangePlayerDirection::TurnLeft
@@ -175,7 +177,7 @@ fn control_movement(
                 }
                 MovementAction::Jump => {
                     if is_grounded {
-                        linear_velocity.y = jump_impulse.0;
+                        linear_velocity.y = jump_impulse.0 * damper;
                         player_state_writer.write(ChangePlayerState::ChangeModeJumping);
                     }
                 }
@@ -215,7 +217,9 @@ fn update_grounded(
 
 
 /// Slows down movement in the X direction.
-fn apply_movement_damping(mut query: Query<(&MovementDampingFactor, &mut LinearVelocity)>) {
+fn apply_movement_damping(
+    mut query: Query<(&MovementDampingFactor, &mut LinearVelocity), 
+    Without<ConnectedChain>>) {
     for (damping_factor, mut linear_velocity) in &mut query {
         // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
         linear_velocity.x *= damping_factor.0;
