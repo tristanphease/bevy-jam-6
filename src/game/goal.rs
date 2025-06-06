@@ -5,12 +5,16 @@ use crate::{game::player::Player, prelude::*, screen::Screen};
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<GoalBundle>("goal");
 
-    app.add_systems(Update, Screen::Gameplay.on_update(process_goals));
+    app.add_systems(Update, Screen::Gameplay.on_update((process_goals, rotate)));
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 struct Goal;
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[reflect(Component)]
+struct RotateComponent;
 
 #[derive(Bundle, Default, LdtkEntity)]
 pub struct GoalBundle {
@@ -18,6 +22,7 @@ pub struct GoalBundle {
     sensor: Sensor,
     #[sprite_sheet]
     sprite_sheet: Sprite,
+    rotate: RotateComponent,
 }
 
 fn process_goals(mut commands: Commands, goal_query: Query<Entity, Added<Goal>>) {
@@ -43,5 +48,14 @@ fn goal_observer(
         };
 
         indices.level += 1;
+    }
+}
+
+fn rotate(
+    query: Query<&mut Transform, With<RotateComponent>>,
+    time: Res<Time>,
+) {
+    for mut object_transform in query {
+        object_transform.rotate_z(time.delta_secs() * 1.0);
     }
 }

@@ -16,12 +16,17 @@ Chain Reaction
 - Make camera follow the player - done
 - Work out a way to create levels
     - Use bevy_ecs_ldtk / ltdk.io - done
-    - Create basic tileset - think about a theme
+    
 - Get chains working
     - Pre-existing in world chains - done 
     - Chains coming down - have events that trigger this? 
     - Chains from player
-- Multiple levels
+- Multiple levels - done
+- Add way to die, spikes? enemies?
+- Add checkpoints?
+- Create basic tileset - think about a theme
 - Fix menu and restarting level
-- Audio??
 - Iron out physics
+- Start some level design
+- Audio??
+

@@ -7,7 +7,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.configure::<LevelAssets>();
 
-    app.register_ldtk_int_cell::<StaticWallBundle>(1);
+    app.register_ldtk_int_cell_for_layer::<StaticWallBundle>("walls", 1);
 
     app.insert_resource(LevelSelection::index(0));
 
