@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 mod animated_sprite;
+mod boxes;
 mod chain;
 mod chain_movement;
 pub mod death_anim;
@@ -37,6 +38,7 @@ pub(super) fn plugin(app: &mut App) {
         vines::plugin,
         player_chain::plugin,
         death_anim::plugin,
+        boxes::plugin,
     ));
 
     app.configure::<GameAssets>();

@@ -1,4 +1,11 @@
-use crate::{game::{chain_movement::GameLayer, player_chain::{GeneratedChain, GeneratedChainJoint}}, prelude::*, screen::Screen};
+use crate::{
+    game::{
+        chain_movement::GameLayer,
+        player_chain::{GeneratedChain, GeneratedChainJoint},
+    },
+    prelude::*,
+    screen::Screen,
+};
 use avian2d::math::Vector;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -175,13 +182,14 @@ pub fn convert_chain_to_parts(
                 .id();
 
             // joint between the two entities
-            commands.spawn(
-                RevoluteJoint::new(last_chain, next_chain)
-                    .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
-                    .with_angle_limits(-0.01, 0.01)
-                    .with_compliance(0.000001),
-            )
-            .insert_if(GeneratedChainJoint, || generated_chain);
+            commands
+                .spawn(
+                    RevoluteJoint::new(last_chain, next_chain)
+                        .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
+                        .with_angle_limits(-0.01, 0.01)
+                        .with_compliance(0.000001),
+                )
+                .insert_if(GeneratedChainJoint, || generated_chain);
 
             last_chain_option = Some(next_chain);
         } else {

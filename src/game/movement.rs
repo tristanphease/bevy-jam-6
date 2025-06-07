@@ -8,7 +8,11 @@ use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
 use crate::{
-    game::{chain::ConnectedChain, death_anim::PauseWhenDyingSystems, player::{Player, PlayerState}},
+    game::{
+        chain::ConnectedChain,
+        death_anim::PauseWhenDyingSystems,
+        player::{Player, PlayerState},
+    },
     screen::Screen,
 };
 
@@ -175,7 +179,7 @@ fn control_movement(
         {
             let jump_damper = if is_grounded { 1.0 } else { 0.6 };
             let damper = if is_on_chain { 0.6 } else { 1.0 } * jump_damper;
-            
+
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += damper * *direction * movement_acceleration.0 * delta_time;
@@ -202,7 +206,13 @@ fn control_movement(
 fn update_grounded(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &ShapeHits, &Rotation, &PlayerState, Option<&MaxSlopeAngle>),
+        (
+            Entity,
+            &ShapeHits,
+            &Rotation,
+            &PlayerState,
+            Option<&MaxSlopeAngle>,
+        ),
         (With<CharacterController>, With<Player>),
     >,
     mut player_state_writer: EventWriter<ChangePlayerState>,

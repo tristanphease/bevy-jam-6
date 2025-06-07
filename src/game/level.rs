@@ -12,6 +12,7 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(LevelSelection::index(0));
 
     app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_level));
+    app.add_systems(StateFlush, Screen::Gameplay.on_exit(despawn_level));
     app.add_systems(
         Update,
         Screen::Gameplay
@@ -199,4 +200,10 @@ fn spawn_level(mut commands: Commands, assets: Res<LevelAssets>) {
         ldtk_handle: assets.level_map.clone().into(),
         ..default()
     });
+}
+
+fn despawn_level(mut commands: Commands, level_query: Query<Entity, With<LdtkProjectHandle>>) {
+    for level_entity in level_query {
+        commands.entity(level_entity).despawn();
+    }
 }

@@ -287,7 +287,6 @@ fn handle_eye_bobble(
         } else {
             **bobble = generate_random_eye_offset();
         }
-        
     }
 }
 

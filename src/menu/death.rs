@@ -20,7 +20,9 @@ fn spawn_death_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
         ]));
 }
 
-fn last_checkpoint(_: Trigger<Pointer<Click>>, mut _commands: Commands) {}
+fn last_checkpoint(_: Trigger<Pointer<Click>>, mut commands: Commands) {
+    commands.spawn(fade_out(Screen::Gameplay));
+}
 
 fn quit_to_title(_: Trigger<Pointer<Click>>, mut commands: Commands) {
     commands.spawn(fade_out(Screen::Title));

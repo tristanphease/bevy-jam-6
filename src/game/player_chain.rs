@@ -2,7 +2,9 @@ use bevy::window::PrimaryWindow;
 
 use crate::{
     game::{
-        chain::{convert_chain_to_parts, ChainAssets, PivotChainPart, CHAIN_IMAGE_SIZE, CHAIN_SIZE},
+        chain::{
+            CHAIN_IMAGE_SIZE, CHAIN_SIZE, ChainAssets, PivotChainPart, convert_chain_to_parts,
+        },
         death_anim::PauseWhenDyingSystems,
         player::Player,
     },
@@ -87,7 +89,7 @@ fn convert_chain(
     chain_assets: Res<ChainAssets>,
     generated_query: Query<Entity, With<GeneratedChain>>,
     generated_joint_query: Query<Entity, (With<RevoluteJoint>, With<GeneratedChainJoint>)>,
-    generated_pivot_query: Query<Entity, (With<PivotChainPart>, With<GeneratedChain>)>
+    generated_pivot_query: Query<Entity, (With<PivotChainPart>, With<GeneratedChain>)>,
 ) {
     if let Some(event) = event_reader.read().last() {
         // delete existing chain
@@ -99,13 +101,13 @@ fn convert_chain(
             }
 
             for generated_chain_entity in generated_query {
-                commands.entity(generated_chain_entity)
+                commands
+                    .entity(generated_chain_entity)
                     .insert(DespawnTimer(Timer::from_seconds(3.0, TimerMode::Once)));
             }
 
             for pivot_entity in generated_pivot_query {
-                commands.entity(pivot_entity)
-                    .insert(RigidBody::Dynamic);
+                commands.entity(pivot_entity).insert(RigidBody::Dynamic);
             }
 
             let start_pos = event.start_pos;

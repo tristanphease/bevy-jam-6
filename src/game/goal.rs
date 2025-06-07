@@ -9,10 +9,12 @@ use crate::{
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<GoalBundle>("goal");
 
+    app.add_event::<EnableGoalEvent>();
+
     app.add_systems(
         Update,
         Screen::Gameplay
-            .on_update((process_goals, rotate))
+            .on_update((process_goals, rotate, update_goal))
             .in_set(PausableSystems)
             .in_set(PauseWhenDyingSystems),
     );
@@ -24,6 +26,10 @@ struct Goal;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
+struct DisabledGoal;
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
+#[reflect(Component)]
 struct RotateComponent;
 
 #[derive(Bundle, Default, LdtkEntity)]
@@ -32,15 +38,37 @@ pub struct GoalBundle {
     sensor: Sensor,
     #[sprite_sheet]
     sprite_sheet: Sprite,
-    rotate: RotateComponent,
 }
 
-fn process_goals(mut commands: Commands, goal_query: Query<Entity, Added<Goal>>) {
-    for goal_entity in goal_query {
+#[derive(Debug, Default, Event)]
+pub struct EnableGoalEvent;
+
+fn update_goal(
+    mut commands: Commands,
+    mut event_reader: EventReader<EnableGoalEvent>,
+    goal_query: Query<(Entity, &mut Sprite), With<Goal>>,
+) {
+    if event_reader.read().last().is_some() {
+        for (goal_entity, mut goal_sprite) in goal_query {
+            goal_sprite.color = Color::default();
+
+            commands
+                .entity(goal_entity)
+                .remove::<DisabledGoal>()
+                .insert(RotateComponent)
+                .observe(goal_observer);
+        }
+    }
+}
+
+fn process_goals(mut commands: Commands, goal_query: Query<(Entity, &mut Sprite), Added<Goal>>) {
+    for (goal_entity, mut goal_sprite) in goal_query {
+        goal_sprite.color = Color::Hsla(Hsla::default().with_alpha(0.2));
+
         commands
             .entity(goal_entity)
             .insert((Collider::rectangle(10.0, 10.0), CollisionEventsEnabled))
-            .observe(goal_observer);
+            .insert(DisabledGoal);
     }
 }
 

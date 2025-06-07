@@ -7,7 +7,10 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(Gravity(Vector::NEG_Y * 500.0));
 
     app.add_systems(StateFlush, Pause.on_edge(unpause_physics, pause_physics));
-    app.add_systems(StateFlush, PlayerDying.on_edge(unpause_physics, pause_physics));
+    app.add_systems(
+        StateFlush,
+        PlayerDying.on_edge(unpause_physics, pause_physics),
+    );
 }
 
 const PIXELS_PER_METER: f32 = 16.0;
