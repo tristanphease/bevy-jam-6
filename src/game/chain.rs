@@ -2,8 +2,9 @@ use crate::{game::chain_movement::GameLayer, prelude::*, screen::Screen};
 use avian2d::math::Vector;
 use bevy_ecs_ldtk::prelude::*;
 
-const CHAIN_SIZE: f32 = 0.16;
-const CHAIN_IMAGE_SIZE: f32 = 100.0;
+pub const CHAIN_SIZE: f32 = 0.16;
+pub const CHAIN_IMAGE_SIZE: f32 = 100.0;
+const INTENDED_CHAIN_SIZE: f32 = 100.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<ChainImportBundle>("chain");
@@ -20,7 +21,7 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Resource)]
 pub struct ChainAssets {
     #[asset(path = "image/chain.png")]
-    chain_image: Handle<Image>,
+    pub chain_image: Handle<Image>,
 }
 
 impl Configure for ChainAssets {
@@ -85,8 +86,13 @@ impl ChainBundle {
         transform: Transform,
         chain_part: ChainPart,
     ) -> Self {
+        let sprite = Sprite {
+            image: image_handle,
+            custom_size: Some(Vec2::splat(INTENDED_CHAIN_SIZE)),
+            ..default()
+        };
         Self {
-            sprite: Sprite::from_image(image_handle),
+            sprite,
             rigid_body,
             collider: Collider::rectangle(CHAIN_SIZE * 10.0, CHAIN_SIZE * 50.0),
             transform,
@@ -108,49 +114,73 @@ fn process_chain(
     chain_assets: Res<ChainAssets>,
 ) {
     for chain_transform in chain_query.iter() {
-        let mut last_chain_option: Option<Entity> = None;
-        let max_value = f32::floor(chain_transform.scale.y / CHAIN_SIZE);
-        let max_value_i32 = max_value as i32;
-        for y in 0..max_value_i32 {
-            // let mut transform = Transform::from_translation(chain_transform.translation);
-            let mut transform = chain_transform.clone();
-            transform.scale.y = CHAIN_SIZE;
-            transform.translation.y -= (y as f32) * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
-            if let Some(last_chain) = last_chain_option {
-                let next_chain = commands
+        let start_pos = chain_transform.translation.xy() + Vec2::Y * 0.5 * chain_transform.scale.y;
+        let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
+        convert_chain_to_parts(
+            start_pos,
+            end_pos,
+            &mut commands,
+            &chain_assets,
+        );
+    }
+}
+
+/// Converts a chain from 2 distance to the parts, note the start chain is the pivot point
+pub fn convert_chain_to_parts(
+    start_chain: Vec2,
+    end_chain: Vec2,
+    commands: &mut Commands,
+    chain_assets: &Res<ChainAssets>,
+) {
+    let distance = Vec2::distance(start_chain, end_chain);
+    let max_value = f32::floor(distance / CHAIN_SIZE);
+    let max_value_i32 = max_value as i32 + 1;
+    let direction = (end_chain - start_chain).normalize();
+
+    let mut last_chain_option: Option<Entity> = None;
+    for value in 0..max_value_i32 {
+        let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
+        let position = start_chain + value * direction;
+        let transform = Transform {
+            translation: position.extend(1.0),
+            rotation: Quat::from_rotation_arc(Vec3::NEG_Y, direction.extend(0.0)),
+            scale: Vec3::new(CHAIN_SIZE, CHAIN_SIZE, 1.0),
+        };
+
+        if let Some(last_chain) = last_chain_option {
+            let next_chain = commands
+                .spawn(ChainBundle::new(
+                    chain_assets.chain_image.clone(),
+                    RigidBody::Dynamic,
+                    transform,
+                    ChainPart,
+                ))
+                .observe(observe_chain_collision)
+                .id();
+
+            // joint between the two entities
+            commands.spawn(
+                RevoluteJoint::new(last_chain, next_chain)
+                    .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
+                    .with_angle_limits(-0.01, 0.01)
+                    .with_compliance(0.000001),
+            );
+
+            last_chain_option = Some(next_chain);
+        } else {
+            // spawn fixed chain at the start
+            // could use different sprite for this one to indicate it's fixed
+            last_chain_option = Some(
+                commands
                     .spawn(ChainBundle::new(
                         chain_assets.chain_image.clone(),
-                        RigidBody::Dynamic,
+                        RigidBody::Kinematic,
                         transform,
                         ChainPart,
                     ))
                     .observe(observe_chain_collision)
-                    .id();
-
-                // joint between the two entities
-                commands.spawn(
-                    RevoluteJoint::new(last_chain, next_chain)
-                        .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * CHAIN_IMAGE_SIZE)
-                        .with_angle_limits(-0.01, 0.01)
-                        .with_compliance(0.000001),
-                );
-
-                last_chain_option = Some(next_chain);
-            } else {
-                // spawn fixed chain at the start
-                // could use different sprite for this one to indicate it's fixed
-                last_chain_option = Some(
-                    commands
-                        .spawn(ChainBundle::new(
-                            chain_assets.chain_image.clone(),
-                            RigidBody::Kinematic,
-                            transform,
-                            ChainPart,
-                        ))
-                        .observe(observe_chain_collision)
-                        .id(),
-                );
-            }
+                    .id(),
+            );
         }
     }
 }

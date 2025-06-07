@@ -7,6 +7,7 @@ mod goal;
 mod level;
 mod movement;
 mod player;
+mod player_chain;
 mod vines;
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
@@ -33,6 +34,7 @@ pub(super) fn plugin(app: &mut App) {
         chain_movement::plugin,
         goal::plugin,
         vines::plugin,
+        player_chain::plugin,
     ));
 
     app.configure::<GameAssets>();

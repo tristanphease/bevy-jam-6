@@ -2,7 +2,12 @@ use super::{
     animated_sprite::{AnimationIndices, AnimationTimer},
     movement::CharacterControllerBundle,
 };
-use crate::{core::camera::SmoothFollow, game::chain::CanAttachChain, prelude::*, screen::Screen};
+use crate::{
+    core::camera::SmoothFollow,
+    game::{chain::CanAttachChain, player_chain::CanShootChain},
+    prelude::*,
+    screen::Screen,
+};
 use bevy_ecs_ldtk::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -178,6 +183,7 @@ fn process_player(
                 ColliderDensity(4.0),
                 GravityScale(2.0),
                 CollisionEventsEnabled,
+                CanShootChain,
                 CanAttachChain,
             ))
             .with_children(|player| {

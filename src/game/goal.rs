@@ -51,10 +51,7 @@ fn goal_observer(
     }
 }
 
-fn rotate(
-    query: Query<&mut Transform, With<RotateComponent>>,
-    time: Res<Time>,
-) {
+fn rotate(query: Query<&mut Transform, With<RotateComponent>>, time: Res<Time>) {
     for mut object_transform in query {
         object_transform.rotate_z(time.delta_secs() * 1.0);
     }
