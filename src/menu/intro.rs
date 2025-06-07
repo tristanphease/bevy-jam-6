@@ -14,7 +14,7 @@ fn spawn_intro_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
         .entity(menu_root.ui)
         .with_child(widget::body(children![
             widget::header("[b]How to play"),
-            widget::paragraph("Be skillful,\nwin the game!\nPress P to pause."),
+            widget::paragraph("WASD for movement, collect boxes to unlock the goal!"),
             widget::row_of_buttons(children![
                 widget::button("Back", go_back),
                 widget::button("Start", start_game)

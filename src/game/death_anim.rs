@@ -15,8 +15,7 @@ pub(super) fn plugin(app: &mut App) {
         PauseWhenDyingSystems.run_if(PlayerDying::is_disabled),
     );
 
-    app.add_systems(StateFlush, Screen::Gameplay.on_exit(reset_death));
-    app.add_systems(StateFlush, Menu::Death.on_exit(reset_death));
+    app.add_systems(StateFlush, Menu::Death.on_enter(reset_death));
 
     app.add_systems(
         Update,
@@ -47,11 +46,14 @@ fn handle_player_death(
     mut commands: Commands,
 ) {
     if let Some(_death_event) = player_death_event_reader.read().last() {
-        player_dying.enable_default();
+        if player_dying.get().is_none() {
+            info!("enabling death");
+            player_dying.enable_default();
 
-        commands
-            .entity(*player_entity)
-            .insert(DyingTimer(Timer::from_seconds(3.0, TimerMode::Once)));
+            commands
+                .entity(*player_entity)
+                .insert(DyingTimer(Timer::from_seconds(3.0, TimerMode::Once)));
+        }
     }
 }
 
@@ -64,6 +66,7 @@ fn handle_player_death_timer(
         timer.tick(time.delta());
 
         if timer.just_finished() {
+            info!("enabling death menu");
             player_death_menu.enable_default();
         }
     }
@@ -73,6 +76,7 @@ fn reset_death(
     mut player_dying: NextMut<PlayerDying>,
     mut player_death_menu: NextMut<ShowPlayerDeathMenu>,
 ) {
+    info!("resetting death");
     player_dying.disable();
     player_death_menu.disable();
 }
