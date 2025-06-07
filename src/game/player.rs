@@ -181,7 +181,7 @@ fn process_player(
     new_player: Query<Entity, Added<Player>>,
 ) {
     for player_entity in new_player.iter() {
-        let layout = TextureAtlasLayout::from_grid(UVec2::splat(500), 5, 1, None, None);
+        let layout = TextureAtlasLayout::from_grid(UVec2::splat(500), 6, 1, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
         let mut player_sprite = Sprite::from_atlas_image(

@@ -173,7 +173,9 @@ fn control_movement(
         for (movement_acceleration, jump_impulse, mut linear_velocity, is_grounded, is_on_chain) in
             &mut controller_query
         {
-            let damper = if is_on_chain { 0.6 } else { 1.0 };
+            let jump_damper = if is_grounded { 1.0 } else { 0.6 };
+            let damper = if is_on_chain { 0.6 } else { 1.0 } * jump_damper;
+            
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += damper * *direction * movement_acceleration.0 * delta_time;

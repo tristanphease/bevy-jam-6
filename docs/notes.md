@@ -20,7 +20,7 @@ Chain Reaction
 - Get chains working
     - Pre-existing in world chains - done 
     - Chains coming down - have events that trigger this? 
-    - Chains from player - kinda done
+    - Chains from player - done
 - Multiple levels - done
 - Add way to die, spikes? enemies? - have vines but want a boss
 - Add checkpoints?

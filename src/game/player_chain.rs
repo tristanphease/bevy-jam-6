@@ -2,7 +2,7 @@ use bevy::window::PrimaryWindow;
 
 use crate::{
     game::{
-        chain::{CHAIN_IMAGE_SIZE, CHAIN_SIZE, ChainAssets, convert_chain_to_parts},
+        chain::{convert_chain_to_parts, ChainAssets, PivotChainPart, CHAIN_IMAGE_SIZE, CHAIN_SIZE},
         death_anim::PauseWhenDyingSystems,
         player::Player,
     },
@@ -26,6 +26,7 @@ pub(super) fn plugin(app: &mut App) {
                 read_shoot_chain_event,
                 update_shooting_chain,
                 convert_chain,
+                handle_despawn_timer,
             ))
             .in_set(PausableSystems)
             .in_set(PauseWhenDyingSystems),
@@ -45,6 +46,14 @@ pub struct ShootingChain {
 #[derive(Component, Debug, Clone, Copy, Default, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub struct GeneratedChain;
+
+#[derive(Component, Debug, Clone, Copy, Default, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub struct GeneratedChainJoint;
+
+#[derive(Component, Debug, Clone, Default, PartialEq, Eq, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
+pub struct DespawnTimer(pub Timer);
 
 #[derive(Component, Debug, Clone, Copy, Deref, DerefMut, PartialEq, Reflect)]
 #[reflect(Component)]
@@ -76,15 +85,32 @@ fn convert_chain(
     existing_shooting_chain: Query<Entity, With<ShootingChain>>,
     mut commands: Commands,
     chain_assets: Res<ChainAssets>,
+    generated_query: Query<Entity, With<GeneratedChain>>,
+    generated_joint_query: Query<Entity, (With<RevoluteJoint>, With<GeneratedChainJoint>)>,
+    generated_pivot_query: Query<Entity, (With<PivotChainPart>, With<GeneratedChain>)>
 ) {
     if let Some(event) = event_reader.read().last() {
         // delete existing chain
         for entity in existing_shooting_chain {
             commands.entity(entity).despawn();
 
+            for generated_joint_entity in generated_joint_query {
+                commands.entity(generated_joint_entity).despawn();
+            }
+
+            for generated_chain_entity in generated_query {
+                commands.entity(generated_chain_entity)
+                    .insert(DespawnTimer(Timer::from_seconds(3.0, TimerMode::Once)));
+            }
+
+            for pivot_entity in generated_pivot_query {
+                commands.entity(pivot_entity)
+                    .insert(RigidBody::Dynamic);
+            }
+
             let start_pos = event.start_pos;
             let end_pos = event.end_pos;
-            convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets);
+            convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets, true);
         }
     }
 }
@@ -216,6 +242,19 @@ fn handle_input(
             if let Ok(world_pos) = camera.0.viewport_to_world_2d(camera.1, mouse_position) {
                 shoot_chain_event_writer.write(ShootChain(world_pos));
             }
+        }
+    }
+}
+
+fn handle_despawn_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    entity_despawn_timer: Query<(Entity, &mut DespawnTimer)>,
+) {
+    for (entity, mut despawn_timer) in entity_despawn_timer {
+        despawn_timer.tick(time.delta());
+        if despawn_timer.just_finished() {
+            commands.entity(entity).despawn();
         }
     }
 }

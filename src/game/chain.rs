@@ -1,4 +1,4 @@
-use crate::{game::chain_movement::GameLayer, prelude::*, screen::Screen};
+use crate::{game::{chain_movement::GameLayer, player_chain::{GeneratedChain, GeneratedChainJoint}}, prelude::*, screen::Screen};
 use avian2d::math::Vector;
 use bevy_ecs_ldtk::prelude::*;
 
@@ -59,6 +59,11 @@ pub struct ChainImmunity(pub Timer);
 #[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
 pub struct ChainPart;
+
+/// The pivot chain part
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
+#[reflect(Component)]
+pub struct PivotChainPart;
 
 /// Chain that's imported from the map editor
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -124,7 +129,7 @@ fn process_chain(
     for chain_transform in chain_query.iter() {
         let start_pos = chain_transform.translation.xy() + Vec2::Y * 0.5 * chain_transform.scale.y;
         let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
-        convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets);
+        convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets, false);
     }
 }
 
@@ -134,6 +139,7 @@ pub fn convert_chain_to_parts(
     end_chain: Vec2,
     commands: &mut Commands,
     chain_assets: &Res<ChainAssets>,
+    generated_chain: bool,
 ) {
     let distance = Vec2::distance(start_chain, end_chain);
     let max_value = f32::floor(distance / CHAIN_SIZE);
@@ -164,6 +170,7 @@ pub fn convert_chain_to_parts(
                     transform,
                     ChainPart,
                 ))
+                .insert_if(GeneratedChain, || generated_chain)
                 .observe(observe_chain_collision)
                 .id();
 
@@ -173,7 +180,8 @@ pub fn convert_chain_to_parts(
                     .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
                     .with_angle_limits(-0.01, 0.01)
                     .with_compliance(0.000001),
-            );
+            )
+            .insert_if(GeneratedChainJoint, || generated_chain);
 
             last_chain_option = Some(next_chain);
         } else {
@@ -187,6 +195,8 @@ pub fn convert_chain_to_parts(
                         transform,
                         ChainPart,
                     ))
+                    .insert(PivotChainPart)
+                    .insert_if(GeneratedChain, || generated_chain)
                     .observe(observe_chain_collision)
                     .id(),
             );
