@@ -22,11 +22,11 @@ Chain Reaction
     - Chains coming down - have events that trigger this? 
     - Chains from player - kinda done
 - Multiple levels - done
-- Add way to die, spikes? enemies?
+- Add way to die, spikes? enemies? - have vines but want a boss
 - Add checkpoints?
 - Create basic tileset - think about a theme
 - Fix menu and restarting level
 - Iron out physics
 - Start some level design
-- Audio??
+- Audio?? - not enough time
 

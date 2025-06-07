@@ -8,7 +8,7 @@ use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
 use crate::{
-    game::{chain::ConnectedChain, death_anim::PauseWhenDyingSystems},
+    game::{chain::ConnectedChain, death_anim::PauseWhenDyingSystems, player::{Player, PlayerState}},
     screen::Screen,
 };
 
@@ -26,6 +26,7 @@ pub(super) fn plugin(app: &mut App) {
                 update_grounded,
                 control_movement,
                 apply_movement_damping,
+                update_idle,
             ))
             .in_set(PausableSystems)
             .in_set(PauseWhenDyingSystems),
@@ -199,12 +200,12 @@ fn control_movement(
 fn update_grounded(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &ShapeHits, &Rotation, Option<&MaxSlopeAngle>),
-        With<CharacterController>,
+        (Entity, &ShapeHits, &Rotation, &PlayerState, Option<&MaxSlopeAngle>),
+        (With<CharacterController>, With<Player>),
     >,
     mut player_state_writer: EventWriter<ChangePlayerState>,
 ) {
-    for (entity, hits, rotation, max_slope_angle) in &mut query {
+    for (entity, hits, rotation, player_state, max_slope_angle) in &mut query {
         // The character is grounded if the shape caster has a hit with a normal
         // that isn't too steep.
         let is_grounded = hits.iter().any(|hit| {
@@ -217,9 +218,22 @@ fn update_grounded(
 
         if is_grounded {
             commands.entity(entity).insert(Grounded);
-            player_state_writer.write(ChangePlayerState::ChangeModeIdle);
+            if *player_state == PlayerState::Jumping {
+                player_state_writer.write(ChangePlayerState::ChangeModeIdle);
+            }
         } else {
             commands.entity(entity).remove::<Grounded>();
+        }
+    }
+}
+
+fn update_idle(
+    player_query: Query<(&LinearVelocity, &PlayerState), With<Player>>,
+    mut event_writer: EventWriter<ChangePlayerState>,
+) {
+    for (velocity, player_state) in player_query {
+        if *player_state == PlayerState::Running && velocity.x.abs() < 0.3 {
+            event_writer.write(ChangePlayerState::ChangeModeIdle);
         }
     }
 }

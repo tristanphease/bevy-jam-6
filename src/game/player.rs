@@ -24,8 +24,8 @@ const PLAYER_SCALE_Y: f32 = PLAYER_HEIGHT / INKSCAPE_SCALE;
 // spritesheet indices
 const IDLE_INDEX: usize = 0;
 const RUN_FIRST_INDEX: usize = 1;
-const RUN_LAST_INDEX: usize = 3;
-const JUMP_INDEX: usize = 4;
+const RUN_LAST_INDEX: usize = 4;
+const JUMP_INDEX: usize = 5;
 
 // info for the eyes
 const EYE_RADIUS: f32 = 25.0 * PLAYER_SCALE_X;
@@ -59,6 +59,7 @@ pub(super) fn plugin(app: &mut App) {
                 set_camera_follow,
                 change_player_direction,
                 change_player_state,
+                handle_eye_bobble,
             ))
             .in_set(PausableSystems),
     );
@@ -144,10 +145,32 @@ enum PlayerEye {
     Right,
 }
 
+impl PlayerEye {
+    fn get_pos(&self) -> Vec2 {
+        match self {
+            PlayerEye::Left => Vec2::new(LEFT_EYE_POS_X, LEFT_EYE_POS_Y),
+            PlayerEye::Right => Vec2::new(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y),
+        }
+    }
+
+    fn get_pos_with_dir(&self, direction: Direction) -> Vec2 {
+        let pos = self.get_pos();
+        if direction == Direction::Left {
+            Vec2::new(-pos.x, pos.y)
+        } else {
+            Vec2::new(pos.x, pos.y)
+        }
+    }
+}
+
 #[derive(Bundle, Default, LdtkEntity)]
 struct PlayerBundle {
     player: Player,
 }
+
+#[derive(Component, Debug, Default, Clone, Copy, PartialEq, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
+struct PlayerEyeBobble(pub Vec2);
 
 fn process_player(
     mut commands: Commands,
@@ -194,18 +217,18 @@ fn process_player(
                 CanAttachChain,
             ))
             .with_children(|player| {
-                player.spawn((
-                    Mesh2d(eye_mesh.clone()),
-                    MeshMaterial2d(eye_material.clone()),
-                    PlayerEye::Left,
-                    Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0),
-                ));
-                player.spawn((
-                    Mesh2d(eye_mesh.clone()),
-                    MeshMaterial2d(eye_material.clone()),
-                    PlayerEye::Right,
-                    Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0),
-                ));
+                let eyes = [PlayerEye::Left, PlayerEye::Right];
+                for eye in eyes {
+                    let position = eye.get_pos().extend(1.0);
+
+                    player.spawn((
+                        Mesh2d(eye_mesh.clone()),
+                        MeshMaterial2d(eye_material.clone()),
+                        PlayerEyeBobble::default(),
+                        eye,
+                        Transform::from_translation(position),
+                    ));
+                }
             });
     }
 }
@@ -223,6 +246,7 @@ fn change_player_direction(
     mut direction_event_reader: EventReader<ChangePlayerDirection>,
 ) {
     for event in direction_event_reader.read() {
+        let existing_direction = *player.0;
         *player.0 = event.to_direction();
         player.1.flip_x = match event {
             ChangePlayerDirection::TurnLeft => true,
@@ -231,24 +255,50 @@ fn change_player_direction(
 
         for eye_entity in player.2.iter() {
             let player_eye = player_eyes_query.get_mut(eye_entity);
-            if let Ok(mut player_eye) = player_eye {
-                *player_eye.0 = match (event, player_eye.1) {
-                    (ChangePlayerDirection::TurnLeft, PlayerEye::Left) => {
-                        Transform::from_xyz(-LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0)
-                    },
-                    (ChangePlayerDirection::TurnRight, PlayerEye::Left) => {
-                        Transform::from_xyz(LEFT_EYE_POS_X, LEFT_EYE_POS_Y, 1.0)
-                    },
-                    (ChangePlayerDirection::TurnLeft, PlayerEye::Right) => {
-                        Transform::from_xyz(-RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0)
-                    },
-                    (ChangePlayerDirection::TurnRight, PlayerEye::Right) => {
-                        Transform::from_xyz(RIGHT_EYE_POS_X, RIGHT_EYE_POS_Y, 1.0)
-                    },
-                };
+            if let Ok((mut player_eye_transform, player_eye)) = player_eye {
+                let old_pos = player_eye.get_pos_with_dir(existing_direction);
+                let existing_offset = player_eye_transform.translation.xy() - old_pos;
+                let position = player_eye.get_pos_with_dir(event.to_direction()) + existing_offset;
+                *player_eye_transform = Transform::from_translation(position.extend(1.0));
             }
         }
     }
+}
+
+fn handle_eye_bobble(
+    time: Res<Time>,
+    player_eye_bobble: Query<(&mut PlayerEyeBobble, &mut Transform, &PlayerEye)>,
+    player_direction: Single<&Direction, With<Player>>,
+) {
+    const EYE_MOVEMENT_SPEED: f32 = 10.0;
+    for (mut bobble, mut transform, eye_type) in player_eye_bobble {
+        let eye_position = eye_type.get_pos_with_dir(**player_direction);
+        let position_diff = eye_position - transform.translation.xy();
+        let offset_diff = position_diff - **bobble;
+        let normalised_offset = offset_diff.try_normalize();
+        if let Some(normalised_offset) = normalised_offset {
+            let offset_move = normalised_offset * time.delta_secs() * EYE_MOVEMENT_SPEED;
+            if offset_move.length() >= offset_diff.length() {
+                transform.translation += offset_diff.extend(0.0);
+                **bobble = generate_random_eye_offset();
+            } else {
+                transform.translation += offset_move.extend(0.0);
+            }
+        } else {
+            **bobble = generate_random_eye_offset();
+        }
+        
+    }
+}
+
+fn generate_random_eye_offset() -> Vec2 {
+    const EYE_X_OFFSET: f32 = 8.0;
+    const EYE_Y_OFFSET: f32 = 16.0;
+
+    let x = (random::<f32>() - 0.5) * EYE_X_OFFSET;
+    let y = (random::<f32>() - 0.5) * EYE_Y_OFFSET;
+
+    Vec2::new(x, y)
 }
 
 fn change_player_state(
