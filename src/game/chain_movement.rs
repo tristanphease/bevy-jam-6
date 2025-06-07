@@ -12,7 +12,9 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        Screen::Gameplay.on_update((handle_keyboard_input, handle_player_chain_event)),
+        Screen::Gameplay
+            .on_update((handle_keyboard_input, handle_player_chain_event))
+            .in_set(PausableSystems),
     );
 }
 

@@ -13,7 +13,9 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        Screen::Gameplay.on_update((process_chain, process_chain_immunity_timer)),
+        Screen::Gameplay
+            .on_update((process_chain, process_chain_immunity_timer))
+            .in_set(PausableSystems),
     );
 }
 

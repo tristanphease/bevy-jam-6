@@ -51,10 +51,17 @@ pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<PlayerBundle>("player");
 
     // app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_player));
-    app.add_systems(Update, Screen::Gameplay.on_update(process_player));
-    app.add_systems(Update, Screen::Gameplay.on_update(set_camera_follow));
-    app.add_systems(Update, Screen::Gameplay.on_update(change_player_direction));
-    app.add_systems(Update, Screen::Gameplay.on_update(change_player_state));
+    app.add_systems(
+        Update,
+        Screen::Gameplay
+            .on_update((
+                process_player,
+                set_camera_follow,
+                change_player_direction,
+                change_player_state,
+            ))
+            .in_set(PausableSystems),
+    );
 }
 
 #[derive(AssetCollection, Resource, Reflect, Default)]

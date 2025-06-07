@@ -1,11 +1,21 @@
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::player::Player, prelude::*, screen::Screen};
+use crate::{
+    game::{death_anim::PauseWhenDyingSystems, player::Player},
+    prelude::*,
+    screen::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<GoalBundle>("goal");
 
-    app.add_systems(Update, Screen::Gameplay.on_update((process_goals, rotate)));
+    app.add_systems(
+        Update,
+        Screen::Gameplay
+            .on_update((process_goals, rotate))
+            .in_set(PausableSystems)
+            .in_set(PauseWhenDyingSystems),
+    );
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]

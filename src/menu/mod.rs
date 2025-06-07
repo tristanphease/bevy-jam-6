@@ -1,3 +1,4 @@
+mod death;
 mod intro;
 mod main;
 mod pause;
@@ -45,6 +46,7 @@ pub enum Menu {
     Main,
     Intro,
     Pause,
+    Death,
     Settings,
 }
 
@@ -59,7 +61,13 @@ impl Configure for Menu {
                 Menu::ANY.on_disable(Pause::disable),
             ),
         );
-        app.add_plugins((main::plugin, intro::plugin, pause::plugin, settings::plugin));
+        app.add_plugins((
+            main::plugin,
+            intro::plugin,
+            pause::plugin,
+            settings::plugin,
+            death::plugin,
+        ));
     }
 }
 

@@ -7,7 +7,12 @@ use avian2d::{
 use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
-use crate::{game::chain::ConnectedChain, screen::Screen};
+use crate::{
+    game::{chain::ConnectedChain, death_anim::PauseWhenDyingSystems},
+    screen::Screen,
+};
+
+use crate::prelude::*;
 
 use super::player::{ChangePlayerDirection, ChangePlayerState};
 
@@ -15,12 +20,15 @@ pub(super) fn plugin(app: &mut App) {
     app.add_event::<MovementAction>();
     app.add_systems(
         Update,
-        Screen::Gameplay.on_update((
-            handle_keyboard_input,
-            update_grounded,
-            control_movement,
-            apply_movement_damping,
-        )),
+        Screen::Gameplay
+            .on_update((
+                handle_keyboard_input,
+                update_grounded,
+                control_movement,
+                apply_movement_damping,
+            ))
+            .in_set(PausableSystems)
+            .in_set(PauseWhenDyingSystems),
     );
 
     // for debugging

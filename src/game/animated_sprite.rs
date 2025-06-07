@@ -1,7 +1,12 @@
 use crate::{prelude::*, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, Screen::Gameplay.on_update(animate_sprite));
+    app.add_systems(
+        Update,
+        Screen::Gameplay
+            .on_update(animate_sprite)
+            .in_set(PausableSystems),
+    );
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect, Deref, DerefMut)]

@@ -1,11 +1,20 @@
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::player::Player, prelude::*, screen::Screen};
+use crate::{
+    game::{death_anim::PlayerDeath, player::Player},
+    prelude::*,
+    screen::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_int_cell_for_layer::<VinesBundle>("vines", 1);
 
-    app.add_systems(Update, Screen::Gameplay.on_update(process_vines));
+    app.add_systems(
+        Update,
+        Screen::Gameplay
+            .on_update(process_vines)
+            .in_set(PausableSystems),
+    );
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
@@ -35,9 +44,13 @@ fn process_vines(vines_added_query: Query<Entity, Added<Vine>>, mut commands: Co
     }
 }
 
-fn on_vine_collide(trigger: Trigger<OnCollisionStart>, player_query: Query<Entity, With<Player>>) {
+fn on_vine_collide(
+    trigger: Trigger<OnCollisionStart>,
+    player_query: Query<Entity, With<Player>>,
+    mut death_event_writer: EventWriter<PlayerDeath>,
+) {
     let other_entity = trigger.collider;
     if player_query.contains(other_entity) {
-        warn!("dead player")
+        death_event_writer.write(PlayerDeath);
     }
 }

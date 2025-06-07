@@ -3,6 +3,7 @@ use crate::prelude::*;
 mod animated_sprite;
 mod chain;
 mod chain_movement;
+pub mod death_anim;
 mod goal;
 mod level;
 mod movement;
@@ -35,6 +36,7 @@ pub(super) fn plugin(app: &mut App) {
         goal::plugin,
         vines::plugin,
         player_chain::plugin,
+        death_anim::plugin,
     ));
 
     app.configure::<GameAssets>();

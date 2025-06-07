@@ -3,6 +3,7 @@ use bevy::window::PrimaryWindow;
 use crate::{
     game::{
         chain::{CHAIN_IMAGE_SIZE, CHAIN_SIZE, ChainAssets, convert_chain_to_parts},
+        death_anim::PauseWhenDyingSystems,
         player::Player,
     },
     prelude::*,
@@ -11,7 +12,7 @@ use crate::{
 
 const PLAYER_CHAIN_SIZE: f32 = 16.0;
 const CHAIN_SPEED: f32 = 35.0;
-const MAX_CHAIN_DIST: f32 = 1000000.0;
+const MAX_CHAIN_DIST: f32 = 100000.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<ChainHitEnd>();
@@ -19,12 +20,15 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        Screen::Gameplay.on_update((
-            handle_input,
-            read_shoot_chain_event,
-            update_shooting_chain,
-            convert_chain,
-        )),
+        Screen::Gameplay
+            .on_update((
+                handle_input,
+                read_shoot_chain_event,
+                update_shooting_chain,
+                convert_chain,
+            ))
+            .in_set(PausableSystems)
+            .in_set(PauseWhenDyingSystems),
     );
 }
 

@@ -12,7 +12,12 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(LevelSelection::index(0));
 
     app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_level));
-    app.add_systems(Update, Screen::Gameplay.on_update(spawn_wall_collision));
+    app.add_systems(
+        Update,
+        Screen::Gameplay
+            .on_update(spawn_wall_collision)
+            .in_set(PausableSystems),
+    );
 }
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
