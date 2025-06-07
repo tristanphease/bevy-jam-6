@@ -2,7 +2,7 @@ use bevy::window::PrimaryWindow;
 
 use crate::{
     game::{
-        chain::{convert_chain_to_parts, ChainAssets, CHAIN_IMAGE_SIZE, CHAIN_SIZE},
+        chain::{CHAIN_IMAGE_SIZE, CHAIN_SIZE, ChainAssets, convert_chain_to_parts},
         player::Player,
     },
     prelude::*,
@@ -37,7 +37,6 @@ pub struct CanShootChain;
 pub struct ShootingChain {
     end_position: Vec2,
 }
-
 
 #[derive(Component, Debug, Clone, Copy, Default, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
@@ -132,11 +131,16 @@ fn update_shooting_chain(
 
             let direction = Dir2::new(to_vector).unwrap();
             let filter = SpatialQueryFilter::default().with_excluded_entities([attached_entity]);
-            if let Some(hit_info) =
-                spatial_query.cast_ray(origin_position, direction, PLAYER_CHAIN_SIZE * **chain_length, false, &filter)
-            {
+            if let Some(hit_info) = spatial_query.cast_ray(
+                origin_position,
+                direction,
+                PLAYER_CHAIN_SIZE * **chain_length,
+                false,
+                &filter,
+            ) {
                 let hit_point = origin_position + direction * hit_info.distance;
-                let end_pos = hit_point - direction * hit_info.distance * CHAIN_SIZE / PLAYER_CHAIN_SIZE;
+                let end_pos =
+                    hit_point - direction * hit_info.distance * CHAIN_SIZE / PLAYER_CHAIN_SIZE;
                 chain_hit_event_writer.write(ChainHitEnd {
                     start_pos: hit_point,
                     end_pos,

@@ -22,6 +22,12 @@ pub(super) fn plugin(app: &mut App) {
 pub struct ChainAssets {
     #[asset(path = "image/chain.png")]
     pub chain_image: Handle<Image>,
+
+    #[asset(path = "image/chain_pivot.png")]
+    pub chain_pivot_image: Handle<Image>,
+
+    #[asset(path = "image/final_chain.png")]
+    pub final_chain_image: Handle<Image>,
 }
 
 impl Configure for ChainAssets {
@@ -116,12 +122,7 @@ fn process_chain(
     for chain_transform in chain_query.iter() {
         let start_pos = chain_transform.translation.xy() + Vec2::Y * 0.5 * chain_transform.scale.y;
         let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
-        convert_chain_to_parts(
-            start_pos,
-            end_pos,
-            &mut commands,
-            &chain_assets,
-        );
+        convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets);
     }
 }
 
@@ -134,11 +135,12 @@ pub fn convert_chain_to_parts(
 ) {
     let distance = Vec2::distance(start_chain, end_chain);
     let max_value = f32::floor(distance / CHAIN_SIZE);
-    let max_value_i32 = max_value as i32 + 1;
+    let max_value_i32 = max_value as i32;
     let direction = (end_chain - start_chain).normalize();
 
     let mut last_chain_option: Option<Entity> = None;
-    for value in 0..max_value_i32 {
+    for value in 0..=max_value_i32 {
+        let last = value == max_value_i32;
         let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
         let position = start_chain + value * direction;
         let transform = Transform {
@@ -148,9 +150,14 @@ pub fn convert_chain_to_parts(
         };
 
         if let Some(last_chain) = last_chain_option {
+            let image_handle = if last {
+                chain_assets.final_chain_image.clone()
+            } else {
+                chain_assets.chain_image.clone()
+            };
             let next_chain = commands
                 .spawn(ChainBundle::new(
-                    chain_assets.chain_image.clone(),
+                    image_handle,
                     RigidBody::Dynamic,
                     transform,
                     ChainPart,
@@ -173,7 +180,7 @@ pub fn convert_chain_to_parts(
             last_chain_option = Some(
                 commands
                     .spawn(ChainBundle::new(
-                        chain_assets.chain_image.clone(),
+                        chain_assets.chain_pivot_image.clone(),
                         RigidBody::Kinematic,
                         transform,
                         ChainPart,
