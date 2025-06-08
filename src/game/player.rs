@@ -179,6 +179,7 @@ fn process_player(
     assets: Res<PlayerAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     new_player: Query<Entity, Added<Player>>,
+    current_level: Res<LevelSelection>,
 ) {
     for player_entity in new_player.iter() {
         let layout = TextureAtlasLayout::from_grid(UVec2::splat(500), 6, 1, None, None);
@@ -213,9 +214,12 @@ fn process_player(
                 ColliderDensity(4.0),
                 GravityScale(2.0),
                 CollisionEventsEnabled,
-                CanShootChain,
                 CanAttachChain,
             ))
+            .insert_if(CanShootChain, || match *current_level {
+                LevelSelection::Indices(level_indices) => level_indices.level > 0,
+                _ => false,
+            })
             .with_children(|player| {
                 let eyes = [PlayerEye::Left, PlayerEye::Right];
                 for eye in eyes {

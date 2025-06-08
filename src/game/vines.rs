@@ -39,7 +39,7 @@ fn process_vines(vines_added_query: Query<Entity, Added<Vine>>, mut commands: Co
     for vine_entity in vines_added_query {
         commands
             .entity(vine_entity)
-            .insert(Collider::rectangle(5.0, 5.0))
+            .insert(Collider::rectangle(5.0, 3.0))
             .observe(on_vine_collide);
     }
 }

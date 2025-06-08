@@ -11,6 +11,7 @@ mod movement;
 mod player;
 mod player_chain;
 mod vines;
+mod world_text;
 
 #[derive(AssetCollection, Resource, Reflect, Default)]
 #[reflect(Resource)]
@@ -39,6 +40,7 @@ pub(super) fn plugin(app: &mut App) {
         player_chain::plugin,
         death_anim::plugin,
         boxes::plugin,
+        world_text::plugin,
     ));
 
     app.configure::<GameAssets>();
