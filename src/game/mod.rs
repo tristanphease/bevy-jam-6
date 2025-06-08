@@ -5,6 +5,7 @@ mod boxes;
 mod chain;
 mod chain_movement;
 pub mod death_anim;
+mod end_sequence;
 mod goal;
 mod level;
 mod movement;
@@ -43,6 +44,7 @@ pub(super) fn plugin(app: &mut App) {
         boxes::plugin,
         world_text::plugin,
         tree::plugin,
+        end_sequence::plugin,
     ));
 
     app.configure::<GameAssets>();

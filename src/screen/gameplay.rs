@@ -6,6 +6,7 @@ pub(super) fn plugin(app: &mut App) {
     app.configure::<GameplayAction>();
 
     app.add_state::<ShowPlayerDeathMenu>();
+    app.add_state::<ShowGameOverMenu>();
 }
 
 #[derive(Actionlike, Reflect, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -18,6 +19,10 @@ pub enum GameplayAction {
 #[derive(State, Reflect, Copy, Clone, Default, Eq, PartialEq, Debug)]
 #[reflect(Resource)]
 pub struct ShowPlayerDeathMenu;
+
+#[derive(State, Reflect, Copy, Clone, Default, Eq, PartialEq, Debug)]
+#[reflect(Resource)]
+pub struct ShowGameOverMenu;
 
 impl Configure for GameplayAction {
     fn configure(app: &mut App) {
@@ -39,6 +44,9 @@ impl Configure for GameplayAction {
                 (spawn_death_overlay, Menu::Death.enter())
                     .in_set(UpdateSystems::RecordInput)
                     .run_if(Menu::is_disabled.and(ShowPlayerDeathMenu::is_enabled)),
+                (spawn_gameover_overlay, Menu::GameOver.enter())
+                    .in_set(UpdateSystems::RecordInput)
+                    .run_if(Menu::is_disabled.and(ShowGameOverMenu::is_enabled)),
                 Menu::clear
                     .in_set(UpdateSystems::RecordInput)
                     .run_if(Menu::is_enabled.and(action_just_pressed(Self::CloseMenu))),
@@ -57,6 +65,15 @@ fn spawn_pause_overlay(mut commands: Commands) {
 }
 
 fn spawn_death_overlay(mut commands: Commands) {
+    commands.spawn((
+        widget::blocking_overlay(1),
+        ThemeColor::Overlay.set::<BackgroundColor>(),
+        DespawnOnExitState::<Screen>::default(),
+        DespawnOnDisableState::<Menu>::default(),
+    ));
+}
+
+fn spawn_gameover_overlay(mut commands: Commands) {
     commands.spawn((
         widget::blocking_overlay(1),
         ThemeColor::Overlay.set::<BackgroundColor>(),

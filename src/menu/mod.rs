@@ -1,4 +1,5 @@
 mod death;
+mod gameover;
 mod intro;
 mod main;
 mod pause;
@@ -46,6 +47,7 @@ pub enum Menu {
     Main,
     Intro,
     Pause,
+    GameOver,
     Death,
     Settings,
 }
@@ -67,6 +69,7 @@ impl Configure for Menu {
             pause::plugin,
             settings::plugin,
             death::plugin,
+            gameover::plugin,
         ));
     }
 }

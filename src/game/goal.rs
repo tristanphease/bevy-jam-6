@@ -1,7 +1,9 @@
 use bevy_ecs_ldtk::prelude::*;
 
 use crate::{
-    game::{death_anim::PauseWhenDyingSystems, player::Player},
+    game::{
+        death_anim::PauseWhenDyingSystems, end_sequence::StartEndSequenceEvent, player::Player,
+    },
     prelude::*,
     screen::Screen,
 };
@@ -22,7 +24,7 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
-struct Goal;
+pub struct Goal;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
@@ -76,6 +78,7 @@ fn goal_observer(
     trigger: Trigger<OnCollisionStart>,
     player_query: Query<(Entity, &mut Transform), With<Player>>,
     level_selection: ResMut<LevelSelection>,
+    mut event_writer: EventWriter<StartEndSequenceEvent>,
 ) {
     let entity = trigger.collider;
 
@@ -85,7 +88,11 @@ fn goal_observer(
             _ => panic!("level selection should always be Indices in this game"),
         };
 
-        indices.level += 1;
+        if indices.level < 2 {
+            indices.level += 1;
+        } else {
+            event_writer.write(StartEndSequenceEvent);
+        }
     }
 }
 

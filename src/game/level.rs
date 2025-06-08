@@ -7,9 +7,9 @@ pub(super) fn plugin(app: &mut App) {
 
     app.configure::<LevelAssets>();
 
-    app.register_ldtk_int_cell_for_layer::<StaticWallBundle>("walls", 1);
+    app.register_default_ldtk_int_cell_for_layer::<StaticWallBundle>("walls");
 
-    app.insert_resource(LevelSelection::index(0));
+    app.insert_resource(LevelSelection::index(2));
 
     app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_level));
     app.add_systems(StateFlush, Screen::Gameplay.on_exit(despawn_level));
@@ -107,7 +107,7 @@ fn spawn_wall_collision(
                     c_hei: height,
                     grid_size,
                     ..
-                } = level.layer_instances()[0];
+                } = level.layer_instances()[2];
 
                 // combine wall tiles into flat "plates" in each individual row
                 let mut plate_stack: Vec<Vec<Plate>> = Vec::new();

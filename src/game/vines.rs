@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_ldtk_int_cell_for_layer::<VinesBundle>("vines", 1);
+    app.register_default_ldtk_int_cell_for_layer::<VinesBundle>("vines");
 
     app.add_systems(
         Update,
