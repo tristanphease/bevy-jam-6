@@ -92,15 +92,6 @@ impl Configure for IsMusicAudio {
     }
 }
 
-pub fn music_audio(audio_settings: &AudioSettings, handle: Handle<AudioSource>) -> impl Bundle {
-    (
-        Name::new("MusicAudio"),
-        AudioPlayer(handle),
-        PlaybackSettings::LOOP.with_volume(audio_settings.music_volume()),
-        IsMusicAudio,
-    )
-}
-
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 struct IsUiAudio;

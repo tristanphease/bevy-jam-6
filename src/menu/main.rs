@@ -11,10 +11,9 @@ fn spawn_main_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
     commands
         .entity(menu_root.ui)
         .with_child(widget::body(children![
-            widget::header("[b]Bevy Jam 6"),
+            widget::header("[b]Chain Game"),
             widget::column_of_buttons(children![
                 widget::big_button("Play", open_intro),
-                widget::big_button("Settings", open_settings),
                 (
                     widget::big_button("Quit", quit_to_desktop),
                     #[cfg(feature = "web")]
@@ -26,10 +25,6 @@ fn spawn_main_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
 
 fn open_intro(_: Trigger<Pointer<Click>>, mut menu: ResMut<NextStateStack<Menu>>) {
     menu.push(Menu::Intro);
-}
-
-fn open_settings(_: Trigger<Pointer<Click>>, mut menu: ResMut<NextStateStack<Menu>>) {
-    menu.push(Menu::Settings);
 }
 
 fn quit_to_desktop(_: Trigger<Pointer<Click>>, mut app_exit: EventWriter<AppExit>) {
