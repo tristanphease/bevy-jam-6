@@ -9,12 +9,7 @@ use crate::{
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<BoxesBundle>("box");
 
-    app.init_resource::<BoxInfo>();
-
-    app.add_systems(
-        StateFlush,
-        Screen::Gameplay.on_enter((spawn_score, restart_box_info)),
-    );
+    app.add_systems(Update, Screen::Gameplay.on_update(spawn_score));
     app.add_systems(
         Update,
         Screen::Gameplay
@@ -38,7 +33,7 @@ pub struct BoxesBundle {
     collision_events_enabled: CollisionEventsEnabled,
 }
 
-#[derive(Resource, Default)]
+#[derive(Component, Default)]
 struct BoxInfo {
     collected: i32,
     total: i32,
@@ -51,7 +46,7 @@ pub struct ScoreText;
 fn process_boxes(
     mut commands: Commands,
     box_query: Query<Entity, Added<Boxes>>,
-    mut box_info: ResMut<BoxInfo>,
+    mut box_info: Single<&mut BoxInfo>,
 ) {
     for box_entity in box_query {
         commands
@@ -66,7 +61,7 @@ fn process_boxes(
 fn on_box_collect(
     trigger: Trigger<OnCollisionStart>,
     player_query: Query<Entity, With<Player>>,
-    mut box_info: ResMut<BoxInfo>,
+    mut box_info: Single<&mut BoxInfo>,
     mut commands: Commands,
     mut goal_event_writer: EventWriter<EnableGoalEvent>,
 ) {
@@ -85,31 +80,35 @@ fn on_box_collect(
     }
 }
 
-fn spawn_score(mut commands: Commands, box_info: Res<BoxInfo>) {
+fn spawn_score(mut commands: Commands, level_entity: Single<Entity, Added<LevelIid>>) {
+    let box_info = BoxInfo::default();
+
     commands.spawn((
-        Text::new(format!("{}/{}", box_info.collected, box_info.total)),
-        TextFont {
-            font_size: 30.0,
-            ..default()
-        },
-        TextColor(Color::WHITE),
-        Node {
-            position_type: PositionType::Absolute,
-            top: Val::Px(2.0),
-            left: Val::Px(2.0),
-            ..default()
-        },
-        ScoreText,
-    ));
+            Text::new(format!("{}/{}", box_info.collected, box_info.total)),
+            TextFont {
+                font_size: 30.0,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::Px(2.0),
+                left: Val::Px(2.0),
+                ..default()
+            },
+            ScoreText,
+        ));
+
+    commands.entity(*level_entity).with_children(|level| {
+        level.spawn(box_info);
+    });
 }
 
-fn update_score_text(score_text_query: Query<&mut Text, With<ScoreText>>, box_info: Res<BoxInfo>) {
+fn update_score_text(
+    score_text_query: Query<&mut Text, With<ScoreText>>,
+    box_info: Single<&BoxInfo>,
+) {
     for mut score_text in score_text_query {
         score_text.0 = format!("{}/{}", box_info.collected, box_info.total);
     }
-}
-
-fn restart_box_info(mut box_info: ResMut<BoxInfo>) {
-    box_info.collected = 0;
-    box_info.total = 0;
 }

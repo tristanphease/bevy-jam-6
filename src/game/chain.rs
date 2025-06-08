@@ -131,12 +131,20 @@ impl ChainBundle {
 fn process_chain(
     mut commands: Commands,
     chain_query: Query<&Transform, Added<ChainImport>>,
+    level_entity: Single<Entity, With<LevelIid>>,
     chain_assets: Res<ChainAssets>,
 ) {
     for chain_transform in chain_query.iter() {
         let start_pos = chain_transform.translation.xy() + Vec2::Y * 0.5 * chain_transform.scale.y;
         let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
-        convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets, false);
+        convert_chain_to_parts(
+            start_pos,
+            end_pos,
+            &mut commands,
+            *level_entity,
+            &chain_assets,
+            false,
+        );
     }
 }
 
@@ -145,6 +153,7 @@ pub fn convert_chain_to_parts(
     start_chain: Vec2,
     end_chain: Vec2,
     commands: &mut Commands,
+    level_entity: Entity,
     chain_assets: &Res<ChainAssets>,
     generated_chain: bool,
 ) {
@@ -153,63 +162,65 @@ pub fn convert_chain_to_parts(
     let max_value_i32 = max_value as i32;
     let direction = (end_chain - start_chain).normalize();
 
-    let mut last_chain_option: Option<Entity> = None;
-    for value in 0..=max_value_i32 {
-        let last = value == max_value_i32;
-        let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
-        let position = start_chain + value * direction;
-        let transform = Transform {
-            translation: position.extend(1.0),
-            rotation: Quat::from_rotation_arc(Vec3::NEG_Y, direction.extend(0.0)),
-            scale: Vec3::new(CHAIN_SIZE, CHAIN_SIZE, 1.0),
-        };
-
-        if let Some(last_chain) = last_chain_option {
-            let image_handle = if last {
-                chain_assets.final_chain_image.clone()
-            } else {
-                chain_assets.chain_image.clone()
+    commands.entity(level_entity).with_children(|level| {
+        let mut last_chain_option: Option<Entity> = None;
+        for value in 0..=max_value_i32 {
+            let last = value == max_value_i32;
+            let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
+            let position = start_chain + value * direction;
+            let transform = Transform {
+                translation: position.extend(1.0),
+                rotation: Quat::from_rotation_arc(Vec3::NEG_Y, direction.extend(0.0)),
+                scale: Vec3::new(CHAIN_SIZE, CHAIN_SIZE, 1.0),
             };
-            let next_chain = commands
-                .spawn(ChainBundle::new(
-                    image_handle,
-                    RigidBody::Dynamic,
-                    transform,
-                    ChainPart,
-                ))
-                .insert_if(GeneratedChain, || generated_chain)
-                .observe(observe_chain_collision)
-                .id();
 
-            // joint between the two entities
-            commands
-                .spawn(
-                    RevoluteJoint::new(last_chain, next_chain)
-                        .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
-                        .with_angle_limits(-0.01, 0.01)
-                        .with_compliance(0.000001),
-                )
-                .insert_if(GeneratedChainJoint, || generated_chain);
-
-            last_chain_option = Some(next_chain);
-        } else {
-            // spawn fixed chain at the start
-            // could use different sprite for this one to indicate it's fixed
-            last_chain_option = Some(
-                commands
+            if let Some(last_chain) = last_chain_option {
+                let image_handle = if last {
+                    chain_assets.final_chain_image.clone()
+                } else {
+                    chain_assets.chain_image.clone()
+                };
+                let next_chain = level
                     .spawn(ChainBundle::new(
-                        chain_assets.chain_pivot_image.clone(),
-                        RigidBody::Kinematic,
+                        image_handle,
+                        RigidBody::Dynamic,
                         transform,
                         ChainPart,
                     ))
-                    .insert(PivotChainPart)
                     .insert_if(GeneratedChain, || generated_chain)
                     .observe(observe_chain_collision)
-                    .id(),
-            );
+                    .id();
+
+                // joint between the two entities
+                level
+                    .spawn(
+                        RevoluteJoint::new(last_chain, next_chain)
+                            .with_local_anchor_2(Vector::Y * 1.0 * CHAIN_SIZE * INTENDED_CHAIN_SIZE)
+                            .with_angle_limits(-0.01, 0.01)
+                            .with_compliance(0.000001),
+                    )
+                    .insert_if(GeneratedChainJoint, || generated_chain);
+
+                last_chain_option = Some(next_chain);
+            } else {
+                // spawn fixed chain at the start
+                // could use different sprite for this one to indicate it's fixed
+                last_chain_option = Some(
+                    level
+                        .spawn(ChainBundle::new(
+                            chain_assets.chain_pivot_image.clone(),
+                            RigidBody::Kinematic,
+                            transform,
+                            ChainPart,
+                        ))
+                        .insert(PivotChainPart)
+                        .insert_if(GeneratedChain, || generated_chain)
+                        .observe(observe_chain_collision)
+                        .id(),
+                );
+            }
         }
-    }
+    });
 }
 
 #[derive(Component, Debug, PartialEq, Eq)]

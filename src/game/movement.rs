@@ -52,6 +52,10 @@ pub struct Grounded;
 #[derive(Component)]
 pub struct MovementAcceleration(Scalar);
 
+/// The maximum velocity a player can reach from just movement keys
+#[derive(Component, Deref)]
+pub struct MaxPlayerVelocity(Scalar);
+
 /// The damping factor used for slowing down movement.
 #[derive(Component)]
 pub struct MovementDampingFactor(Scalar);
@@ -85,6 +89,7 @@ pub struct MovementBundle {
     damping: MovementDampingFactor,
     jump_impulse: JumpImpulse,
     max_slope_angle: MaxSlopeAngle,
+    max_player_velocity: MaxPlayerVelocity,
 }
 
 impl MovementBundle {
@@ -93,19 +98,21 @@ impl MovementBundle {
         damping: Scalar,
         jump_impulse: Scalar,
         max_slope_angle: Scalar,
+        max_player_velocity: Scalar,
     ) -> Self {
         Self {
             acceleration: MovementAcceleration(acceleration),
             damping: MovementDampingFactor(damping),
             jump_impulse: JumpImpulse(jump_impulse),
             max_slope_angle: MaxSlopeAngle(max_slope_angle),
+            max_player_velocity: MaxPlayerVelocity(max_player_velocity),
         }
     }
 }
 
 impl Default for MovementBundle {
     fn default() -> Self {
-        Self::new(2000.0, 0.95, 300.0, avian2d::math::PI * 0.45)
+        Self::new(2000.0, 0.95, 300.0, avian2d::math::PI * 0.45, 300.0)
     }
 }
 
@@ -165,6 +172,7 @@ fn control_movement(
         &MovementAcceleration,
         &JumpImpulse,
         &mut LinearVelocity,
+        &MaxPlayerVelocity,
         Has<Grounded>,
         Has<ConnectedChain>,
     )>,
@@ -174,15 +182,27 @@ fn control_movement(
     let delta_time = time.delta_secs();
 
     for event in movement_event_reader.read() {
-        for (movement_acceleration, jump_impulse, mut linear_velocity, is_grounded, is_on_chain) in
-            &mut controller_query
+        for (
+            movement_acceleration,
+            jump_impulse,
+            mut linear_velocity,
+            max_velocity,
+            is_grounded,
+            is_on_chain,
+        ) in &mut controller_query
         {
             let jump_damper = if is_grounded { 1.0 } else { 0.6 };
             let damper = if is_on_chain { 0.6 } else { 1.0 } * jump_damper;
 
             match event {
                 MovementAction::Move(direction) => {
-                    linear_velocity.x += damper * *direction * movement_acceleration.0 * delta_time;
+                    if *direction > 0.0 && linear_velocity.x < **max_velocity
+                        || *direction < 0.0 && linear_velocity.x > -**max_velocity
+                    {
+                        linear_velocity.x +=
+                            damper * *direction * movement_acceleration.0 * delta_time;
+                    }
+
                     player_state_writer.write(ChangePlayerState::ChangeModeRunning);
                     let new_direction = if *direction < 0.0 {
                         ChangePlayerDirection::TurnLeft

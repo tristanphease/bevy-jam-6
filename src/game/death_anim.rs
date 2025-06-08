@@ -47,7 +47,6 @@ fn handle_player_death(
 ) {
     if let Some(_death_event) = player_death_event_reader.read().last() {
         if player_dying.get().is_none() {
-            info!("enabling death");
             player_dying.enable_default();
 
             commands
@@ -66,7 +65,6 @@ fn handle_player_death_timer(
         timer.tick(time.delta());
 
         if timer.just_finished() {
-            info!("enabling death menu");
             player_death_menu.enable_default();
         }
     }
@@ -76,7 +74,6 @@ fn reset_death(
     mut player_dying: NextMut<PlayerDying>,
     mut player_death_menu: NextMut<ShowPlayerDeathMenu>,
 ) {
-    info!("resetting death");
     player_dying.disable();
     player_death_menu.disable();
 }

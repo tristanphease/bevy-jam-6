@@ -1,4 +1,5 @@
 use bevy::window::PrimaryWindow;
+use bevy_ecs_ldtk::prelude::*;
 
 use crate::{
     game::{
@@ -87,6 +88,7 @@ fn convert_chain(
     existing_shooting_chain: Query<Entity, With<ShootingChain>>,
     mut commands: Commands,
     chain_assets: Res<ChainAssets>,
+    level_entity: Single<Entity, With<LevelIid>>,
     generated_query: Query<Entity, With<GeneratedChain>>,
     generated_joint_query: Query<Entity, (With<RevoluteJoint>, With<GeneratedChainJoint>)>,
     generated_pivot_query: Query<Entity, (With<PivotChainPart>, With<GeneratedChain>)>,
@@ -112,7 +114,14 @@ fn convert_chain(
 
             let start_pos = event.start_pos;
             let end_pos = event.end_pos;
-            convert_chain_to_parts(start_pos, end_pos, &mut commands, &chain_assets, true);
+            convert_chain_to_parts(
+                start_pos,
+                end_pos,
+                &mut commands,
+                *level_entity,
+                &chain_assets,
+                true,
+            );
         }
     }
 }
