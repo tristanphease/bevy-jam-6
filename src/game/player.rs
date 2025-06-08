@@ -140,7 +140,7 @@ impl ChangePlayerState {
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
-enum PlayerEye {
+pub enum PlayerEye {
     Left,
     Right,
 }
