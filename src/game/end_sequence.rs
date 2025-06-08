@@ -1,12 +1,10 @@
-use crate::{
-    game::{
-        animated_sprite::{AnimationIndices, AnimationTimer},
-        goal::Goal,
-    },
-    menu::Menu,
-    prelude::*,
-    screen::{Screen, gameplay::ShowGameOverMenu},
-};
+use crate::game::animated_sprite::AnimationIndices;
+use crate::game::animated_sprite::AnimationTimer;
+use crate::game::goal::Goal;
+use crate::menu::Menu;
+use crate::prelude::*;
+use crate::screen::Screen;
+use crate::screen::gameplay::ShowGameOverMenu;
 
 const FIRE_SPREAD_OFFSET: f32 = 40.0;
 const FIRE_INDICES: usize = 4;

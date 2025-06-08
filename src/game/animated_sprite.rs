@@ -1,4 +1,5 @@
-use crate::{prelude::*, screen::Screen};
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(

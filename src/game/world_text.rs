@@ -1,5 +1,7 @@
-use crate::{prelude::*, screen::Screen};
 use bevy_ecs_ldtk::prelude::*;
+
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<TempTextBundle>("text");

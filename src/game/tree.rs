@@ -1,14 +1,12 @@
-use crate::{
-    game::{
-        chain_movement::GameLayer,
-        death_anim::PlayerDeath,
-        player::Player,
-        vines::{KillsPlayer, on_collision_kills_player},
-    },
-    prelude::*,
-    screen::Screen,
-};
 use bevy_ecs_ldtk::prelude::*;
+
+use crate::game::chain_movement::GameLayer;
+use crate::game::death_anim::PlayerDeath;
+use crate::game::player::Player;
+use crate::game::vines::KillsPlayer;
+use crate::game::vines::on_collision_kills_player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<TreeBundle>("tree");

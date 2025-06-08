@@ -1,14 +1,13 @@
-use super::{
-    animated_sprite::{AnimationIndices, AnimationTimer},
-    movement::CharacterControllerBundle,
-};
-use crate::{
-    core::camera::SmoothFollow,
-    game::{chain::CanAttachChain, player_chain::CanShootChain},
-    prelude::*,
-    screen::Screen,
-};
 use bevy_ecs_ldtk::prelude::*;
+
+use super::animated_sprite::AnimationIndices;
+use super::animated_sprite::AnimationTimer;
+use super::movement::CharacterControllerBundle;
+use crate::core::camera::SmoothFollow;
+use crate::game::chain::CanAttachChain;
+use crate::game::player_chain::CanShootChain;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]

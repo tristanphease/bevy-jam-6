@@ -1,13 +1,12 @@
-use crate::{
-    game::{
-        chain_movement::GameLayer,
-        player_chain::{DyingChain, GeneratedChain, GeneratedChainJoint},
-    },
-    prelude::*,
-    screen::Screen,
-};
 use avian2d::math::Vector;
 use bevy_ecs_ldtk::prelude::*;
+
+use crate::game::chain_movement::GameLayer;
+use crate::game::player_chain::DyingChain;
+use crate::game::player_chain::GeneratedChain;
+use crate::game::player_chain::GeneratedChainJoint;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub const CHAIN_SIZE: f32 = 0.16;
 pub const CHAIN_IMAGE_SIZE: f32 = 100.0;
@@ -144,7 +143,12 @@ fn process_chain(
     chain_assets: Res<ChainAssets>,
 ) {
     for (chain_transform, chain_entity_iid) in chain_query.iter() {
-        let start_pos = chain_transform.translation.xy() + Vec2::Y * (chain_transform.scale.y / CHAIN_SIZE) * 0.5 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
+        let start_pos = chain_transform.translation.xy()
+            + Vec2::Y
+                * (chain_transform.scale.y / CHAIN_SIZE)
+                * 0.5
+                * CHAIN_SIZE
+                * CHAIN_IMAGE_SIZE;
         let end_pos = start_pos - Vec2::Y * chain_transform.scale.y * 1.5;
         convert_chain_to_parts(
             start_pos,

@@ -1,10 +1,9 @@
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{
-    game::{goal::EnableGoalEvent, player::Player},
-    prelude::*,
-    screen::Screen,
-};
+use crate::game::goal::EnableGoalEvent;
+use crate::game::player::Player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<BoxesBundle>("box");

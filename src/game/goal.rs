@@ -1,12 +1,10 @@
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{
-    game::{
-        death_anim::PauseWhenDyingSystems, end_sequence::StartEndSequenceEvent, player::Player,
-    },
-    prelude::*,
-    screen::Screen,
-};
+use crate::game::death_anim::PauseWhenDyingSystems;
+use crate::game::end_sequence::StartEndSequenceEvent;
+use crate::game::player::Player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_ldtk_entity::<GoalBundle>("goal");

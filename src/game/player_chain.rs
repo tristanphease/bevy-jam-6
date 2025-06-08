@@ -1,17 +1,15 @@
 use bevy::window::PrimaryWindow;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{
-    game::{
-        chain::{
-            CHAIN_IMAGE_SIZE, CHAIN_SIZE, ChainAssets, PivotChainPart, convert_chain_to_parts,
-        },
-        death_anim::PauseWhenDyingSystems,
-        player::Player,
-    },
-    prelude::*,
-    screen::Screen,
-};
+use crate::game::chain::CHAIN_IMAGE_SIZE;
+use crate::game::chain::CHAIN_SIZE;
+use crate::game::chain::ChainAssets;
+use crate::game::chain::PivotChainPart;
+use crate::game::chain::convert_chain_to_parts;
+use crate::game::death_anim::PauseWhenDyingSystems;
+use crate::game::player::Player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 const PLAYER_CHAIN_SIZE: f32 = 16.0;
 const CHAIN_SPEED: f32 = 35.0;

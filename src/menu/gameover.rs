@@ -1,8 +1,8 @@
-use crate::{
-    menu::{Menu, MenuRoot},
-    prelude::*,
-    screen::{Screen, fade::fade_out},
-};
+use crate::menu::Menu;
+use crate::menu::MenuRoot;
+use crate::prelude::*;
+use crate::screen::Screen;
+use crate::screen::fade::fade_out;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(StateFlush, Menu::GameOver.on_enter(spawn_gameover_menu));

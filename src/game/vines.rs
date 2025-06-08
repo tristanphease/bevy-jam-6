@@ -1,10 +1,9 @@
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{
-    game::{death_anim::PlayerDeath, player::Player},
-    prelude::*,
-    screen::Screen,
-};
+use crate::game::death_anim::PlayerDeath;
+use crate::game::player::Player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_default_ldtk_int_cell_for_layer::<VinesBundle>("vines");

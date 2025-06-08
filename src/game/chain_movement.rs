@@ -1,11 +1,9 @@
-use crate::{
-    game::{
-        chain::{ChainImmunity, ChainJoint, ConnectedChain},
-        player::Player,
-    },
-    prelude::*,
-    screen::Screen,
-};
+use crate::game::chain::ChainImmunity;
+use crate::game::chain::ChainJoint;
+use crate::game::chain::ConnectedChain;
+use crate::game::player::Player;
+use crate::prelude::*;
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<PlayerChainEvent>();

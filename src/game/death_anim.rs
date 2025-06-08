@@ -1,14 +1,13 @@
-use bevy::{
-    asset::RenderAssetUsages,
-    render::mesh::{Indices, PrimitiveTopology},
-};
+use bevy::asset::RenderAssetUsages;
+use bevy::render::mesh::Indices;
+use bevy::render::mesh::PrimitiveTopology;
 
-use crate::{
-    game::player::{Player, PlayerEye},
-    menu::Menu,
-    prelude::*,
-    screen::{Screen, gameplay::ShowPlayerDeathMenu},
-};
+use crate::game::player::Player;
+use crate::game::player::PlayerEye;
+use crate::menu::Menu;
+use crate::prelude::*;
+use crate::screen::Screen;
+use crate::screen::gameplay::ShowPlayerDeathMenu;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<PlayerDeath>();

@@ -1,24 +1,19 @@
 //! <https://github.com/Jondolf/avian/blob/main/crates/avian2d/examples/dynamic_character_2d/plugin.rs>
 
-use avian2d::{
-    math::{Scalar, Vector},
-    prelude::*,
-};
+use avian2d::math::Scalar;
+use avian2d::math::Vector;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use pyri_state::pattern::StatePattern;
 
-use crate::{
-    game::{
-        chain::ConnectedChain,
-        death_anim::PauseWhenDyingSystems,
-        player::{Player, PlayerState},
-    },
-    screen::Screen,
-};
-
+use super::player::ChangePlayerDirection;
+use super::player::ChangePlayerState;
+use crate::game::chain::ConnectedChain;
+use crate::game::death_anim::PauseWhenDyingSystems;
+use crate::game::player::Player;
+use crate::game::player::PlayerState;
 use crate::prelude::*;
-
-use super::player::{ChangePlayerDirection, ChangePlayerState};
+use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<MovementAction>();
