@@ -258,10 +258,10 @@ fn observe_chain_collision(
             return;
         }
 
-        if let Some(immunity_chain_id) = immunity_chain_id {
-            if immunity_chain_id.chain_id == chain_id.0 {
-                return;
-            }
+        if let Some(immunity_chain_id) = immunity_chain_id
+            && immunity_chain_id.chain_id == chain_id.0
+        {
+            return;
         }
 
         // create filter so that we don't collide with the chain while on it

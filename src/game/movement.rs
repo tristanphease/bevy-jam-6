@@ -198,7 +198,7 @@ fn control_movement(
                             damper * *direction * movement_acceleration.0 * delta_time;
                     }
 
-                    player_state_writer.write(ChangePlayerState::ChangeModeRunning);
+                    player_state_writer.write(ChangePlayerState::Running);
                     let new_direction = if *direction < 0.0 {
                         ChangePlayerDirection::TurnLeft
                     } else {
@@ -209,7 +209,7 @@ fn control_movement(
                 MovementAction::Jump => {
                     if is_grounded {
                         linear_velocity.y = jump_impulse.0 * damper;
-                        player_state_writer.write(ChangePlayerState::ChangeModeJumping);
+                        player_state_writer.write(ChangePlayerState::Jumping);
                     }
                 },
             }
@@ -246,7 +246,7 @@ fn update_grounded(
         if is_grounded {
             commands.entity(entity).insert(Grounded);
             if *player_state == PlayerState::Jumping {
-                player_state_writer.write(ChangePlayerState::ChangeModeIdle);
+                player_state_writer.write(ChangePlayerState::Idle);
             }
         } else {
             commands.entity(entity).remove::<Grounded>();
@@ -260,7 +260,7 @@ fn update_idle(
 ) {
     for (velocity, player_state) in player_query {
         if *player_state == PlayerState::Running && velocity.x.abs() < 0.3 {
-            event_writer.write(ChangePlayerState::ChangeModeIdle);
+            event_writer.write(ChangePlayerState::Idle);
         }
     }
 }

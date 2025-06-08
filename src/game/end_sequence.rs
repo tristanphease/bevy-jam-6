@@ -223,29 +223,27 @@ fn process_fire_spread(
     for (mut fire_spread, fire_transform) in fire_spread_query {
         fire_spread.timer.tick(time.delta());
 
-        if fire_spread.timer.just_finished() {
-            if !fire_spread.directions_left.is_empty() {
-                let index = thread_rng.gen_range(0..fire_spread.directions_left.len());
-                let direction = fire_spread.directions_left.remove(index);
+        if fire_spread.timer.just_finished() && !fire_spread.directions_left.is_empty() {
+            let index = thread_rng.gen_range(0..fire_spread.directions_left.len());
+            let direction = fire_spread.directions_left.remove(index);
 
-                let position =
-                    fire_transform.translation.xy() + direction.to_vec2() * FIRE_SPREAD_OFFSET;
+            let position =
+                fire_transform.translation.xy() + direction.to_vec2() * FIRE_SPREAD_OFFSET;
 
-                let new_indices = direction.to_indices(fire_spread.x_index, fire_spread.y_index);
+            let new_indices = direction.to_indices(fire_spread.x_index, fire_spread.y_index);
 
-                if let Some(new_indices) = new_indices {
-                    if !fire_grid.get_value(new_indices.0, new_indices.1) {
-                        fire_grid.set_value(new_indices.0, new_indices.1);
-                        create_fire(
-                            position,
-                            new_indices.0,
-                            new_indices.1,
-                            &mut commands,
-                            &assets,
-                            &mut texture_atlas_layouts,
-                        );
-                    }
-                }
+            if let Some(new_indices) = new_indices
+                && !fire_grid.get_value(new_indices.0, new_indices.1)
+            {
+                fire_grid.set_value(new_indices.0, new_indices.1);
+                create_fire(
+                    position,
+                    new_indices.0,
+                    new_indices.1,
+                    &mut commands,
+                    &assets,
+                    &mut texture_atlas_layouts,
+                );
             }
         }
     }

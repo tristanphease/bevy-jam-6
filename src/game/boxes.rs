@@ -67,14 +67,14 @@ fn on_box_collect(
     let box_entity = trigger.body;
     let other_entity = trigger.collider;
 
-    if player_query.contains(other_entity) {
-        if let Some(box_entity) = box_entity {
-            box_info.collected += 1;
-            commands.entity(box_entity).despawn();
+    if player_query.contains(other_entity)
+        && let Some(box_entity) = box_entity
+    {
+        box_info.collected += 1;
+        commands.entity(box_entity).despawn();
 
-            if box_info.collected >= box_info.total {
-                goal_event_writer.write(EnableGoalEvent);
-            }
+        if box_info.collected >= box_info.total {
+            goal_event_writer.write(EnableGoalEvent);
         }
     }
 }

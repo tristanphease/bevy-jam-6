@@ -252,12 +252,11 @@ fn handle_input(
         return;
     }
 
-    if mouse_input.just_pressed(MouseButton::Left) {
-        if let Some(mouse_position) = window.cursor_position() {
-            if let Ok(world_pos) = camera.0.viewport_to_world_2d(camera.1, mouse_position) {
-                shoot_chain_event_writer.write(ShootChain(world_pos));
-            }
-        }
+    if mouse_input.just_pressed(MouseButton::Left)
+        && let Some(mouse_position) = window.cursor_position()
+        && let Ok(world_pos) = camera.0.viewport_to_world_2d(camera.1, mouse_position)
+    {
+        shoot_chain_event_writer.write(ShootChain(world_pos));
     }
 }
 

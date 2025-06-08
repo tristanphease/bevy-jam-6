@@ -51,20 +51,20 @@ fn handle_player_death(
     mut meshes: ResMut<Assets<Mesh>>,
     player_eye_query: Query<Entity, With<PlayerEye>>,
 ) {
-    if let Some(_death_event) = player_death_event_reader.read().last() {
-        if player_dying.get().is_none() {
-            player_dying.enable_default();
+    if let Some(_death_event) = player_death_event_reader.read().last()
+        && player_dying.get().is_none()
+    {
+        player_dying.enable_default();
 
+        commands
+            .entity(*player_entity)
+            .insert(DyingTimer(Timer::from_seconds(3.0, TimerMode::Once)));
+
+        let new_eye_mesh = meshes.add(generate_cross_mesh());
+        for eye_entity in player_eye_query {
             commands
-                .entity(*player_entity)
-                .insert(DyingTimer(Timer::from_seconds(3.0, TimerMode::Once)));
-
-            let new_eye_mesh = meshes.add(generate_cross_mesh());
-            for eye_entity in player_eye_query {
-                commands
-                    .entity(eye_entity)
-                    .insert(Mesh2d(new_eye_mesh.clone()));
-            }
+                .entity(eye_entity)
+                .insert(Mesh2d(new_eye_mesh.clone()));
         }
     }
 }

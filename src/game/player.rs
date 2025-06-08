@@ -102,7 +102,7 @@ pub enum ChangePlayerDirection {
 }
 
 impl ChangePlayerDirection {
-    fn to_direction(&self) -> Direction {
+    fn as_direction(&self) -> Direction {
         match self {
             ChangePlayerDirection::TurnLeft => Direction::Left,
             ChangePlayerDirection::TurnRight => Direction::Right,
@@ -112,27 +112,25 @@ impl ChangePlayerDirection {
 
 #[derive(Event, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ChangePlayerState {
-    ChangeModeRunning,
-    ChangeModeIdle,
-    ChangeModeJumping,
+    Running,
+    Idle,
+    Jumping,
 }
 
 impl ChangePlayerState {
-    fn to_state(&self) -> PlayerState {
+    fn as_state(&self) -> PlayerState {
         match self {
-            ChangePlayerState::ChangeModeRunning => PlayerState::Running,
-            ChangePlayerState::ChangeModeIdle => PlayerState::Idle,
-            ChangePlayerState::ChangeModeJumping => PlayerState::Jumping,
+            ChangePlayerState::Running => PlayerState::Running,
+            ChangePlayerState::Idle => PlayerState::Idle,
+            ChangePlayerState::Jumping => PlayerState::Jumping,
         }
     }
 
-    fn to_indices(&self) -> AnimationIndices {
+    fn as_indices(&self) -> AnimationIndices {
         match self {
-            ChangePlayerState::ChangeModeRunning => {
-                AnimationIndices::new(RUN_FIRST_INDEX, RUN_LAST_INDEX)
-            },
-            ChangePlayerState::ChangeModeIdle => AnimationIndices::single(IDLE_INDEX),
-            ChangePlayerState::ChangeModeJumping => AnimationIndices::single(JUMP_INDEX),
+            ChangePlayerState::Running => AnimationIndices::new(RUN_FIRST_INDEX, RUN_LAST_INDEX),
+            ChangePlayerState::Idle => AnimationIndices::single(IDLE_INDEX),
+            ChangePlayerState::Jumping => AnimationIndices::single(JUMP_INDEX),
         }
     }
 }
@@ -250,7 +248,7 @@ fn change_player_direction(
 ) {
     for event in direction_event_reader.read() {
         let existing_direction = *player.0;
-        *player.0 = event.to_direction();
+        *player.0 = event.as_direction();
         player.1.flip_x = match event {
             ChangePlayerDirection::TurnLeft => true,
             ChangePlayerDirection::TurnRight => false,
@@ -261,7 +259,7 @@ fn change_player_direction(
             if let Ok((mut player_eye_transform, player_eye)) = player_eye {
                 let old_pos = player_eye.get_pos_with_dir(existing_direction);
                 let existing_offset = player_eye_transform.translation.xy() - old_pos;
-                let position = player_eye.get_pos_with_dir(event.to_direction()) + existing_offset;
+                let position = player_eye.get_pos_with_dir(event.as_direction()) + existing_offset;
                 *player_eye_transform = Transform::from_translation(position.extend(1.0));
             }
         }
@@ -308,7 +306,7 @@ fn change_player_state(
     mut state_event_reader: EventReader<ChangePlayerState>,
 ) {
     for event in state_event_reader.read() {
-        *player.0 = event.to_state();
-        *player.1 = event.to_indices();
+        *player.0 = event.as_state();
+        *player.1 = event.as_indices();
     }
 }
