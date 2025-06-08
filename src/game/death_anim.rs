@@ -1,10 +1,13 @@
-use bevy::{asset::RenderAssetUsages, render::mesh::{Indices, PrimitiveTopology}};
+use bevy::{
+    asset::RenderAssetUsages,
+    render::mesh::{Indices, PrimitiveTopology},
+};
 
 use crate::{
     game::player::{Player, PlayerEye},
     menu::Menu,
     prelude::*,
-    screen::{gameplay::ShowPlayerDeathMenu, Screen},
+    screen::{Screen, gameplay::ShowPlayerDeathMenu},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -56,10 +59,11 @@ fn handle_player_death(
             commands
                 .entity(*player_entity)
                 .insert(DyingTimer(Timer::from_seconds(3.0, TimerMode::Once)));
-            
+
             let new_eye_mesh = meshes.add(generate_cross_mesh());
             for eye_entity in player_eye_query {
-                commands.entity(eye_entity)
+                commands
+                    .entity(eye_entity)
                     .insert(Mesh2d(new_eye_mesh.clone()));
             }
         }
@@ -87,12 +91,7 @@ fn generate_cross_mesh() -> Mesh {
 
     cross_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices_positions);
 
-    let triangle_indices = vec![
-        0, 1, 2,
-        2, 3, 0,
-        4, 5, 6,
-        6, 7, 4,
-    ];
+    let triangle_indices = vec![0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4];
     cross_mesh.insert_indices(Indices::U32(triangle_indices));
 
     cross_mesh

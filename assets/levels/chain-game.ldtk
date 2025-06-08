@@ -11,7 +11,7 @@
 	"iid": "6ab86f30-3740-11f0-87e0-93cf1418ce5d",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 36,
+	"nextUid": 38,
 	"identifierStyle": "Lowercase",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -588,6 +588,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "tree",
+			"uid": 37,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 128,
+			"height": 128,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#D77643",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 36,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 36, "x": 0, "y": 0, "w": 300, "h": 300 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -722,6 +757,25 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "7976" }
+		},
+		{
+			"__cWid": 1,
+			"__cHei": 1,
+			"identifier": "tree",
+			"uid": 36,
+			"relPath": "../image/tree.png",
+			"embedAtlas": null,
+			"pxWid": 300,
+			"pxHei": 300,
+			"tileGridSize": 300,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "5352" }
 		}
 	], "enums": [], "externalEnums": [], "levelFields": [] },
 	"levels": [
@@ -12208,6 +12262,20 @@
 							"defUid": 30,
 							"px": [800,1568],
 							"fieldInstances": []
+						},
+						{
+							"__identifier": "chain",
+							"__grid": [23,13],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 10, "x": 0, "y": 0, "w": 200, "h": 200 },
+							"__smartColor": "#6B6B6B",
+							"iid": "b87f2b30-3740-11f0-b823-3507d89a3704",
+							"width": 32,
+							"height": 64,
+							"defUid": 7,
+							"px": [736,416],
+							"fieldInstances": [{ "__identifier": "pivot", "__type": "Point", "__value": null, "__tile": null, "defUid": 9, "realEditorValues": [] }]
 						}
 					]
 				},

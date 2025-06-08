@@ -10,6 +10,7 @@ mod level;
 mod movement;
 mod player;
 mod player_chain;
+mod tree;
 mod vines;
 mod world_text;
 
@@ -41,6 +42,7 @@ pub(super) fn plugin(app: &mut App) {
         death_anim::plugin,
         boxes::plugin,
         world_text::plugin,
+        tree::plugin,
     ));
 
     app.configure::<GameAssets>();

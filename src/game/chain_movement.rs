@@ -1,6 +1,6 @@
 use crate::{
     game::{
-        chain::{ChainImmunity, ChainJoint, ChildOfChain, ConnectedChain},
+        chain::{ChainImmunity, ChainJoint, ConnectedChain},
         player::Player,
     },
     prelude::*,
@@ -23,6 +23,7 @@ pub enum GameLayer {
     #[default]
     Default, // Layer 0 - the default layer that objects are assigned to
     ChainLayer, // for chains
+    TreeLayer,  // for trees
 }
 
 #[derive(Event, Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,8 +51,8 @@ fn handle_player_chain_event(
     mut chain_event_reader: EventReader<PlayerChainEvent>,
     mut commands: Commands,
     mut player_query: Single<
-        (Entity, &mut Transform, &mut LinearVelocity, &ChildOfChain),
-        (With<Player>, With<ConnectedChain>),
+        (Entity, &mut Transform, &mut LinearVelocity, &ConnectedChain),
+        With<Player>,
     >,
     joint_query: Query<(Entity, &DistanceJoint), With<ChainJoint>>,
 ) {
@@ -63,8 +64,10 @@ fn handle_player_chain_event(
                 commands
                     .entity(player_entity)
                     .remove::<ConnectedChain>()
-                    .remove::<ChildOfChain>()
-                    .insert(ChainImmunity(Timer::from_seconds(1.0, TimerMode::Once)))
+                    .insert(ChainImmunity::new(
+                        Timer::from_seconds(1.0, TimerMode::Once),
+                        player_query.3.0.to_string(),
+                    ))
                     .insert(GravityScale(2.0))
                     .insert(CollisionLayers::DEFAULT);
 

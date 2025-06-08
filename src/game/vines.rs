@@ -39,12 +39,12 @@ fn process_vines(vines_added_query: Query<Entity, Added<Vine>>, mut commands: Co
     for vine_entity in vines_added_query {
         commands
             .entity(vine_entity)
-            .insert(Collider::rectangle(5.0, 3.0))
-            .observe(on_vine_collide);
+            .insert(Collider::rectangle(5.0, 2.0))
+            .observe(on_collision_kills_player);
     }
 }
 
-fn on_vine_collide(
+pub fn on_collision_kills_player(
     trigger: Trigger<OnCollisionStart>,
     player_query: Query<Entity, With<Player>>,
     mut death_event_writer: EventWriter<PlayerDeath>,

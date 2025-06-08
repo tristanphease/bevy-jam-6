@@ -53,19 +53,28 @@ impl Configure for ChainAssets {
 pub struct CanAttachChain;
 
 /// Means the chain handles the movement now
-#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Reflect)]
-#[reflect(Component)]
-pub struct ConnectedChain;
-
-/// Means the entity is immune from attaching to chains for a time defined by the timer
-#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Deref, DerefMut, Reflect)]
-#[reflect(Component)]
-pub struct ChainImmunity(pub Timer);
-
-/// Part of a chain
 #[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
 #[reflect(Component)]
-pub struct ChainPart;
+pub struct ConnectedChain(pub String);
+
+/// Means the entity is immune from attaching to chains for a time defined by the timer
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
+#[reflect(Component)]
+pub struct ChainImmunity {
+    timer: Timer,
+    chain_id: String,
+}
+
+impl ChainImmunity {
+    pub fn new(timer: Timer, chain_id: String) -> Self {
+        Self { timer, chain_id }
+    }
+}
+
+/// Part of a chain
+#[derive(Component, Debug, Clone, PartialEq, Eq, Default, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
+pub struct ChainPart(pub String);
 
 /// The pivot chain part
 #[derive(Component, Debug, Clone, PartialEq, Eq, Default, Reflect)]
@@ -130,16 +139,20 @@ impl ChainBundle {
 // process and create the chain when imported
 fn process_chain(
     mut commands: Commands,
-    chain_query: Query<&Transform, Added<ChainImport>>,
+    chain_query: Query<(&Transform, &EntityIid), Added<ChainImport>>,
     level_entity: Single<Entity, With<LevelIid>>,
     chain_assets: Res<ChainAssets>,
 ) {
-    for chain_transform in chain_query.iter() {
-        let start_pos = chain_transform.translation.xy() + Vec2::Y * 0.5 * chain_transform.scale.y;
+    for (chain_transform, chain_entity_iid) in chain_query.iter() {
+        let start_pos = chain_transform.translation.xy()
+            + Vec2::Y * 0.5 * chain_transform.scale.y
+            + 3.0 * Vec2::Y * CHAIN_SIZE;
         let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
+        info!("{start_pos:?}, {end_pos:?}, {chain_transform:?}");
         convert_chain_to_parts(
             start_pos,
             end_pos,
+            chain_entity_iid.as_str(),
             &mut commands,
             *level_entity,
             &chain_assets,
@@ -152,19 +165,20 @@ fn process_chain(
 pub fn convert_chain_to_parts(
     start_chain: Vec2,
     end_chain: Vec2,
+    chain_id: &str,
     commands: &mut Commands,
     level_entity: Entity,
     chain_assets: &Res<ChainAssets>,
     generated_chain: bool,
 ) {
     let distance = Vec2::distance(start_chain, end_chain);
-    let max_value = f32::floor(distance / CHAIN_SIZE);
+    let max_value = f32::ceil(distance / CHAIN_SIZE);
     let max_value_i32 = max_value as i32;
     let direction = (end_chain - start_chain).normalize();
 
     commands.entity(level_entity).with_children(|level| {
         let mut last_chain_option: Option<Entity> = None;
-        for value in 0..=max_value_i32 {
+        for value in 0..max_value_i32 {
             let last = value == max_value_i32;
             let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
             let position = start_chain + value * direction;
@@ -185,7 +199,7 @@ pub fn convert_chain_to_parts(
                         image_handle,
                         RigidBody::Dynamic,
                         transform,
-                        ChainPart,
+                        ChainPart(chain_id.to_string()),
                     ))
                     .insert_if(GeneratedChain, || generated_chain)
                     .observe(observe_chain_collision)
@@ -211,7 +225,7 @@ pub fn convert_chain_to_parts(
                             chain_assets.chain_pivot_image.clone(),
                             RigidBody::Kinematic,
                             transform,
-                            ChainPart,
+                            ChainPart(chain_id.to_string()),
                         ))
                         .insert(PivotChainPart)
                         .insert_if(GeneratedChain, || generated_chain)
@@ -223,42 +237,40 @@ pub fn convert_chain_to_parts(
     });
 }
 
-#[derive(Component, Debug, PartialEq, Eq)]
-#[relationship(relationship_target = ChildrenOfChain)]
-pub struct ChildOfChain(#[entities] pub Entity);
-
-#[derive(Component, Default, Debug, Deref, DerefMut, PartialEq, Eq)]
-#[relationship_target(relationship = ChildOfChain)]
-pub struct ChildrenOfChain(Vec<Entity>);
-
 fn observe_chain_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
+    chain_query: Query<&ChainPart>,
     attachable_query: Query<
-        Entity,
-        (
-            With<CanAttachChain>,
-            Without<ConnectedChain>,
-            Without<ChainImmunity>,
-        ),
+        (Entity, Option<&ChainImmunity>),
+        (With<CanAttachChain>, Without<ConnectedChain>),
     >,
 ) {
-    let chain = trigger.target();
+    let chain_entity = trigger.target();
     let other_entity = trigger.collider;
     if attachable_query.contains(other_entity) {
+        let immunity_chain_id = attachable_query.get(other_entity).unwrap().1;
+
+        let chain_id = chain_query.get(chain_entity).unwrap();
+
+        if let Some(immunity_chain_id) = immunity_chain_id {
+            if immunity_chain_id.chain_id == chain_id.0 {
+                return;
+            }
+        }
+
         // create filter so that we don't collide with the chain while on it
         let filters = *LayerMask::ALL & !(GameLayer::ChainLayer.to_bits());
         let ignore_chain_collision_layer = CollisionLayers::new(LayerMask::DEFAULT, filters);
 
         commands
             .entity(other_entity)
-            .insert(ConnectedChain)
-            .insert(ChildOfChain(chain))
+            .insert(ConnectedChain(chain_id.to_string()))
             .insert(GravityScale(1.0))
             .insert(ignore_chain_collision_layer);
 
         commands.spawn((
-            DistanceJoint::new(chain, other_entity).with_limits(1.0, 5.0),
+            DistanceJoint::new(chain_entity, other_entity).with_limits(1.0, 5.0),
             ChainJoint,
         ));
     }
@@ -269,10 +281,12 @@ fn process_chain_immunity_timer(
     mut commands: Commands,
     chain_immunity_query: Query<(&mut ChainImmunity, Entity)>,
 ) {
-    for mut chain_immunity in chain_immunity_query {
-        chain_immunity.0.tick(time.delta());
-        if chain_immunity.0.finished() {
-            commands.entity(chain_immunity.1).remove::<ChainImmunity>();
+    for (mut chain_immunity, chain_immunity_entity) in chain_immunity_query {
+        chain_immunity.timer.tick(time.delta());
+        if chain_immunity.timer.finished() {
+            commands
+                .entity(chain_immunity_entity)
+                .remove::<ChainImmunity>();
         }
     }
 }

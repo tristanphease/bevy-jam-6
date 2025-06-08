@@ -117,6 +117,7 @@ fn convert_chain(
             convert_chain_to_parts(
                 start_pos,
                 end_pos,
+                "player_chain",
                 &mut commands,
                 *level_entity,
                 &chain_assets,

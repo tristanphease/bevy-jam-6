@@ -51,7 +51,7 @@ fn process_boxes(
     for box_entity in box_query {
         commands
             .entity(box_entity)
-            .insert(Collider::rectangle(10.0, 10.0))
+            .insert(Collider::rectangle(15.0, 15.0))
             .observe(on_box_collect);
 
         box_info.total += 1;
@@ -84,20 +84,20 @@ fn spawn_score(mut commands: Commands, level_entity: Single<Entity, Added<LevelI
     let box_info = BoxInfo::default();
 
     commands.spawn((
-            Text::new(format!("{}/{}", box_info.collected, box_info.total)),
-            TextFont {
-                font_size: 30.0,
-                ..default()
-            },
-            TextColor(Color::WHITE),
-            Node {
-                position_type: PositionType::Absolute,
-                top: Val::Px(2.0),
-                left: Val::Px(2.0),
-                ..default()
-            },
-            ScoreText,
-        ));
+        Text::new(format!("{}/{}", box_info.collected, box_info.total)),
+        TextFont {
+            font_size: 30.0,
+            ..default()
+        },
+        TextColor(Color::WHITE),
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(2.0),
+            left: Val::Px(2.0),
+            ..default()
+        },
+        ScoreText,
+    ));
 
     commands.entity(*level_entity).with_children(|level| {
         level.spawn(box_info);
