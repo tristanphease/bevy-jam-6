@@ -1,3 +1,6 @@
+#[allow(unknown_lints)]
+#[allow(mismatched_lifetime_syntaxes)]
+
 use bevy::ecs::entity::Entities;
 use bevy::ecs::system::SystemBuffer;
 use bevy::ecs::system::SystemParam;

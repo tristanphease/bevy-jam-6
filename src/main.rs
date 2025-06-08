@@ -2,6 +2,7 @@
 #![cfg_attr(bevy_lint, feature(register_tool), register_tool(bevy))]
 // Disable console on windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
+#![feature(let_chains)]
 
 mod animation;
 mod core;
