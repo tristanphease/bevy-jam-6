@@ -49,7 +49,6 @@ impl FromWorld for ScreenRoot {
 #[state(after(WindowReady), before(Menu, Pause), react, bevy_state, log_flush)]
 pub enum Screen {
     #[default]
-    Splash,
     Title,
     Loading,
     Gameplay,
