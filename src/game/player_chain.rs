@@ -58,6 +58,10 @@ pub struct GeneratedChainJoint;
 #[reflect(Component)]
 pub struct DespawnTimer(pub Timer);
 
+#[derive(Component, Debug, Clone, Default, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
+pub struct DyingChain;
+
 #[derive(Component, Debug, Clone, Copy, Deref, DerefMut, PartialEq, Reflect)]
 #[reflect(Component)]
 pub struct AttachedEntity(pub Entity);
@@ -105,6 +109,7 @@ fn convert_chain(
             for generated_chain_entity in generated_query {
                 commands
                     .entity(generated_chain_entity)
+                    .insert(DyingChain)
                     .insert(DespawnTimer(Timer::from_seconds(3.0, TimerMode::Once)));
             }
 

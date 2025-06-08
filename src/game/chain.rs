@@ -1,7 +1,7 @@
 use crate::{
     game::{
         chain_movement::GameLayer,
-        player_chain::{GeneratedChain, GeneratedChainJoint},
+        player_chain::{DyingChain, GeneratedChain, GeneratedChainJoint},
     },
     prelude::*,
     screen::Screen,
@@ -237,7 +237,7 @@ pub fn convert_chain_to_parts(
 fn observe_chain_collision(
     trigger: Trigger<OnCollisionStart>,
     mut commands: Commands,
-    chain_query: Query<&ChainPart>,
+    chain_query: Query<(&ChainPart, Has<DyingChain>)>,
     attachable_query: Query<
         (Entity, Option<&ChainImmunity>),
         (With<CanAttachChain>, Without<ConnectedChain>),
@@ -248,7 +248,11 @@ fn observe_chain_collision(
     if attachable_query.contains(other_entity) {
         let immunity_chain_id = attachable_query.get(other_entity).unwrap().1;
 
-        let chain_id = chain_query.get(chain_entity).unwrap();
+        let (chain_id, dying) = chain_query.get(chain_entity).unwrap();
+
+        if dying {
+            return;
+        }
 
         if let Some(immunity_chain_id) = immunity_chain_id {
             if immunity_chain_id.chain_id == chain_id.0 {
