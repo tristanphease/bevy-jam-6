@@ -9,7 +9,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_default_ldtk_int_cell_for_layer::<StaticWallBundle>("walls");
 
-    app.insert_resource(LevelSelection::index(2));
+    app.insert_resource(LevelSelection::index(0));
 
     app.add_systems(StateFlush, Screen::Gameplay.on_enter(spawn_level));
     app.add_systems(StateFlush, Screen::Gameplay.on_exit(despawn_level));

@@ -144,11 +144,8 @@ fn process_chain(
     chain_assets: Res<ChainAssets>,
 ) {
     for (chain_transform, chain_entity_iid) in chain_query.iter() {
-        let start_pos = chain_transform.translation.xy()
-            + Vec2::Y * 0.5 * chain_transform.scale.y
-            + 3.0 * Vec2::Y * CHAIN_SIZE;
-        let end_pos = chain_transform.translation.xy() - Vec2::Y * 0.5 * chain_transform.scale.y;
-        info!("{start_pos:?}, {end_pos:?}, {chain_transform:?}");
+        let start_pos = chain_transform.translation.xy() + Vec2::Y * (chain_transform.scale.y / CHAIN_SIZE) * 0.5 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
+        let end_pos = start_pos - Vec2::Y * chain_transform.scale.y * 1.5;
         convert_chain_to_parts(
             start_pos,
             end_pos,
@@ -179,7 +176,7 @@ pub fn convert_chain_to_parts(
     commands.entity(level_entity).with_children(|level| {
         let mut last_chain_option: Option<Entity> = None;
         for value in 0..max_value_i32 {
-            let last = value == max_value_i32;
+            let last = value == max_value_i32 - 1;
             let value = value as f32 * CHAIN_SIZE * CHAIN_IMAGE_SIZE;
             let position = start_chain + value * direction;
             let transform = Transform {
