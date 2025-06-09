@@ -23,6 +23,12 @@ pub(super) fn plugin(app: &mut App) {
         "../../assets/font/pypx-T.ttf",
         |bytes: &[u8], _path: String| Font::try_from_bytes(bytes.to_vec()).unwrap()
     );
+    load_internal_binary_asset!(
+        app,
+        VERDANA_FONT_HANDLE,
+        "../../assets/font/verdanab.ttf",
+        |bytes: &[u8], _path: String| Font::try_from_bytes(bytes.to_vec()).unwrap()
+    );
 
     app.configure::<DynamicFontSize>();
 }
@@ -30,6 +36,7 @@ pub(super) fn plugin(app: &mut App) {
 pub const FONT_HANDLE: Handle<Font> = weak_handle!("7bb72ab4-990c-4656-b7f1-08f1f2a2e72a");
 pub const BOLD_FONT_HANDLE: Handle<Font> = weak_handle!("b30e0c4e-52cb-4775-aaeb-ced1b93a4cd0");
 pub const THICK_FONT_HANDLE: Handle<Font> = weak_handle!("b099a4e0-1119-4ff7-b4c0-4a80ed5c5765");
+pub const VERDANA_FONT_HANDLE: Handle<Font> = weak_handle!("7dd92263-146f-46e2-b66d-6823b11e156d");
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]

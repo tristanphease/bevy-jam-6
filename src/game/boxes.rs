@@ -86,7 +86,7 @@ fn spawn_score(mut commands: Commands, level_entity: Single<Entity, Added<LevelI
         Text::new(format!("{}/{}", box_info.collected, box_info.total)),
         TextFont {
             font_size: 30.0,
-            font: BOLD_FONT_HANDLE,
+            font: VERDANA_FONT_HANDLE,
             ..default()
         },
         TextColor(Color::WHITE),

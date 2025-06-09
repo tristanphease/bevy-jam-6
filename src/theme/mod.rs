@@ -22,6 +22,7 @@ pub mod prelude {
     pub use super::text::DynamicFontSize;
     pub use super::text::FONT_HANDLE;
     pub use super::text::THICK_FONT_HANDLE;
+    pub use super::text::VERDANA_FONT_HANDLE;
     pub use super::text::parse_rich;
     pub use super::text::parse_rich_custom;
     pub use super::widget;

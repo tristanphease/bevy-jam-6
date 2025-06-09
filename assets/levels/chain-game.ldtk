@@ -11748,9 +11748,9 @@
 							"height": 64,
 							"defUid": 33,
 							"px": [384,384],
-							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Press WASD to move around", "__tile": null, "defUid": 35, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Press WASD \nto move around", "__tile": null, "defUid": 35, "realEditorValues": [{
 								"id": "V_String",
-								"params": ["Press WASD to move around"]
+								"params": ["Press WASD \\nto move around"]
 							}] }]
 						},
 						{
@@ -11768,7 +11768,7 @@
 							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Touch goal to move to the next level.\nYou will need to collect all boxes to access it.", "__tile": null, "defUid": 35, "realEditorValues": [{
 								"id": "V_String",
 								"params": [
-									"Touch goal to move to the next level.\nYou will need to collect all boxes to access it."
+									"Touch goal to move to the next level.\\nYou will need to collect all boxes to access it."
 								]
 							}] }]
 						},
@@ -11786,7 +11786,7 @@
 							"px": [1152,384],
 							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Swing around on chains!\nPress W/space to jump off", "__tile": null, "defUid": 35, "realEditorValues": [{
 								"id": "V_String",
-								"params": ["Swing around on chains!\nPress W/space to jump off"]
+								"params": ["Swing around on chains!\\nPress W/space to jump off"]
 							}] }]
 						},
 						{
@@ -11803,7 +11803,7 @@
 							"px": [1632,384],
 							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Watch out for vines!\nTouching them will kill you", "__tile": null, "defUid": 35, "realEditorValues": [{
 								"id": "V_String",
-								"params": ["Watch out for vines!\nTouching them will kill you"]
+								"params": ["Watch out for vines!\\nTouching them will kill you"]
 							}] }]
 						},
 						{
@@ -11818,9 +11818,9 @@
 							"height": 64,
 							"defUid": 33,
 							"px": [2432,384],
-							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Collect boxes to unlock the goal", "__tile": null, "defUid": 35, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Collect boxes \nto unlock the goal", "__tile": null, "defUid": 35, "realEditorValues": [{
 								"id": "V_String",
-								"params": ["Collect boxes to unlock the goal"]
+								"params": ["Collect boxes \\nto unlock the goal"]
 							}] }]
 						},
 						{
@@ -12326,6 +12326,23 @@
 							"defUid": 7,
 							"px": [1152,1312],
 							"fieldInstances": [{ "__identifier": "pivot", "__type": "Point", "__value": null, "__tile": null, "defUid": 9, "realEditorValues": [] }]
+						},
+						{
+							"__identifier": "text",
+							"__grid": [58,28],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#A1A1A1",
+							"iid": "51b7bfb0-3740-11f0-99c5-6b7013b25b48",
+							"width": 64,
+							"height": 64,
+							"defUid": 33,
+							"px": [1856,896],
+							"fieldInstances": [{ "__identifier": "text", "__type": "String", "__value": "Try using left and right\nto swing around and collect the boxes", "__tile": null, "defUid": 35, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["Try using left and right\\nto swing around and collect the boxes"]
+							}] }]
 						}
 					]
 				},
