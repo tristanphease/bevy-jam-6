@@ -7,8 +7,6 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         StateFlush,
-        Screen::Title.on_enter(
-            (Menu::Main.enter(), Menu::acquire).chain(),
-        ),
+        Screen::Title.on_enter((Menu::Main.enter(), Menu::acquire).chain()),
     );
 }

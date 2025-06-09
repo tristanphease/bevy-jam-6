@@ -1,6 +1,8 @@
 use crate::menu::Menu;
 use crate::menu::MenuRoot;
 use crate::prelude::*;
+use crate::screen::Screen;
+use crate::screen::fade::fade_out;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(StateFlush, Menu::Main.on_enter(spawn_main_menu));
@@ -13,7 +15,7 @@ fn spawn_main_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
         .with_child(widget::body(children![
             widget::header("[b]Chain Game"),
             widget::column_of_buttons(children![
-                widget::big_button("Play", open_intro),
+                widget::big_button("Play", start_game),
                 (
                     widget::big_button("Quit", quit_to_desktop),
                     #[cfg(feature = "web")]
@@ -23,8 +25,17 @@ fn spawn_main_menu(mut commands: Commands, menu_root: Res<MenuRoot>) {
         ]));
 }
 
-fn open_intro(_: Trigger<Pointer<Click>>, mut menu: ResMut<NextStateStack<Menu>>) {
-    menu.push(Menu::Intro);
+fn start_game(
+    _: Trigger<Pointer<Click>>,
+    mut commands: Commands,
+    progress: Res<ProgressTracker<BevyState<Screen>>>,
+) {
+    let Progress { done, total } = progress.get_global_combined_progress();
+    commands.spawn(fade_out(if done >= total {
+        Screen::Gameplay
+    } else {
+        Screen::Loading
+    }));
 }
 
 fn quit_to_desktop(_: Trigger<Pointer<Click>>, mut app_exit: EventWriter<AppExit>) {

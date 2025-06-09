@@ -28,9 +28,14 @@ struct TempTextBundle {
 fn process_text(text_query: Query<(Entity, Ref<WorldText>)>, mut commands: Commands) {
     for (text_entity, world_text) in text_query {
         if world_text.is_added() {
-            commands
-                .entity(text_entity)
-                .insert(Text2d((*world_text).to_string()));
+            commands.entity(text_entity).insert((
+                Text2d::new((*world_text).to_string()),
+                TextFont {
+                    font: FONT_HANDLE,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+            ));
         }
     }
 }

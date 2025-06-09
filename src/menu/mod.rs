@@ -1,9 +1,7 @@
 mod death;
 mod gameover;
-mod intro;
 mod main;
 mod pause;
-mod settings;
 
 use crate::prelude::*;
 
@@ -45,11 +43,9 @@ impl FromWorld for MenuRoot {
 #[reflect(Resource)]
 pub enum Menu {
     Main,
-    Intro,
     Pause,
     GameOver,
     Death,
-    Settings,
 }
 
 impl Configure for Menu {
@@ -63,14 +59,7 @@ impl Configure for Menu {
                 Menu::ANY.on_disable(Pause::disable),
             ),
         );
-        app.add_plugins((
-            main::plugin,
-            intro::plugin,
-            pause::plugin,
-            settings::plugin,
-            death::plugin,
-            gameover::plugin,
-        ));
+        app.add_plugins((main::plugin, pause::plugin, death::plugin, gameover::plugin));
     }
 }
 
